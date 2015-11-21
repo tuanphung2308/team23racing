@@ -29,7 +29,7 @@ var TTTGame = (function() {
 	};
 
 	TTTGame.prototype.init = function() {
-		this.game.stage.backgroundColor = '#ff6600';
+		this.game.stage.backgroundColor = '#9bd3e1';
 		this.game.add.plugin(Phaser.Plugin.Debug);
 	};
 
@@ -47,6 +47,17 @@ var TTTGame = (function() {
 
 		//push sprite to the array arrTiles
 		this.arrTiles.push(sprite);
+	}
+
+	TTTGame.prototype.generateQuestion = function() {
+		var number1 = this.game.rnd.integerInRange(0, 25);
+		var number2 = this.game.rnd.integerInRange(0, 25);
+		var style = {
+			font: "28px Finger Paint",
+			fill: "#fff",
+			tabs: [150, 150, 200]
+		};
+		this.game.add.text(32, 64, 'What is ' + number1 + ' + ' + number2, style);
 	}
 
 	TTTGame.prototype.moveTiles = function(speed) {
@@ -96,7 +107,7 @@ var TTTGame = (function() {
 	}
 
 	TTTGame.prototype.create = function() {
-		var numberOfLayers = 9;  
+		var numberOfLayers = 9;
 
 		for (var i = 0; i < numberOfLayers; i++) {
 			var layer = new Phaser.Sprite(this.game, 0, 0);
@@ -105,6 +116,7 @@ var TTTGame = (function() {
 		}
 
 		this.generateRoad();
+		this.generateQuestion();
 		this.car = new Phaser.Sprite(this.game, GAME_WIDTH / 2, GAME_HEIGHT / 2, 'car');
 		this.game.world.addChild(this.car);
 		this.car.anchor.setTo(0.5, 1);
