@@ -3,7 +3,7 @@ var TTTGame = (function() {
 	var ANGLE = 26.55;
 	var TILE_WIDTH = 68;
 	var SPEED = 5; //tiles speed1
-	var TAXI_START_X = 30;
+	var CAR_START_X = 30;
 
 	function TTTGame(phaserGame) {
 		this.game = phaserGame;
@@ -17,18 +17,19 @@ var TTTGame = (function() {
 			y: GAME_HEIGHT / 2 - 100
 		};
 
-		this.taxi = undefined;
-		this.taxiX = TAXI_START_X;
+		this.car = undefined;
+		this.carX = CAR_START_X;
 	}
 
 	TTTGame.prototype.preload = function() {
 		// This.game.load = instance of Phaser.Loader
 		this.game.load.image('tile_road_1', 'static/img/assets/tile_road_1.png'); //TILE ROAD
-		this.game.load.image('taxi', 'static/img/assets/taxi.png'); //DA CAR
+		this.game.load.image('background', 'static/img/assets/sunset.png'); //Background
+		this.game.load.image('car', 'static/img/assets/taxi.png'); //DA CAR
 	};
 
 	TTTGame.prototype.init = function() {
-		this.game.stage.backgroundColor = '#9bd3e1';
+		this.game.stage.backgroundColor = '#ff6600';
 		this.game.add.plugin(Phaser.Plugin.Debug);
 	};
 
@@ -38,8 +39,8 @@ var TTTGame = (function() {
 
 		//manually create a sprite and add it
 		//'addChildAt' method to add every sprite after first
-		var sprite = new Phaser.Sprite(this.game, x, y, 'tile_road_1');
-		this.game.world.addChildAt(sprite, 0);
+		var sprite = new Phaser.Sprite(this.game, this.roadStartPosition.x, this.roadStartPosition.y, 'tile_road_1');
+		this.arrTiles[4].addChildAt(sprite, 0);
 
 		//set the anchor to the bottom center
 		sprite.anchor.setTo(0.5, 1.0);
@@ -50,14 +51,25 @@ var TTTGame = (function() {
 
 	TTTGame.prototype.moveTiles = function(speed) {
 		var i = this.arrTiles.length - 1;
-
-		//loop thorugh the array from last to first one
+		// Reverse loop over all the tiles
 		while (i >= 0) {
-			var sprite = this.arrTiles[i];
 
-			//Move the sprite
-			sprite.x -= speed * Math.cos(ANGLE * Math.PI / 180);
-			sprite.y += speed * Math.sin(ANGLE * Math.PI / 180);
+			var children = this.arrTiles[i].children;
+			var j = children.length - 1;
+			while (j >= 0) {
+				var sprite = children[j];
+				// Move the sprite
+				sprite.x -= speed * Math.cos(ANGLE * Math.PI / 180);
+				sprite.y += speed * Math.sin(ANGLE * Math.PI / 180);
+
+				if (sprite.x < -120) {
+					// We don't need to splice anymore
+					// this.arrTiles[i].splice(i, 1);
+					this.arrTiles[i].removeChild(sprite);
+					sprite.destroy();
+				}
+				j--;
+			}
 
 			i--;
 		}
@@ -79,21 +91,29 @@ var TTTGame = (function() {
 		return {
 			x: xPos,
 			// -57 due to sin(angle) * hyp
-			y: this.roadStartPosition.y + opposite - 57 
+			y: this.roadStartPosition.y + opposite - 57
 		};
 	}
 
 	TTTGame.prototype.create = function() {
+		var numberOfLayers = 9;  
+
+		for (var i = 0; i < numberOfLayers; i++) {
+			var layer = new Phaser.Sprite(this.game, 0, 0);
+			this.game.world.addChild(layer);
+			this.arrTiles.push(layer);
+		}
+
 		this.generateRoad();
-		this.taxi = new Phaser.Sprite(this.game, GAME_WIDTH / 2, GAME_HEIGHT / 2, 'taxi');
-		this.game.world.addChild(this.taxi);
-		this.taxi.anchor.setTo(0.5, 1);
+		this.car = new Phaser.Sprite(this.game, GAME_WIDTH / 2, GAME_HEIGHT / 2, 'car');
+		this.game.world.addChild(this.car);
+		this.car.anchor.setTo(0.5, 1);
 	};
 
 	TTTGame.prototype.update = function() {
-		var posOnRoad = this.calcPosOnRoadBy(this.taxiX);
-		this.taxi.x = posOnRoad.x;
-		this.taxi.y = posOnRoad.y;
+		var posOnRoad = this.calcPosOnRoadBy(this.carX);
+		this.car.x = posOnRoad.x;
+		this.car.y = posOnRoad.y;
 
 		this.numberOfLoop++;
 		if (this.numberOfLoop > TILE_WIDTH / SPEED) {
