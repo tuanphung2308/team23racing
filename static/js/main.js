@@ -16,17 +16,17 @@ var phaserGame = new Phaser.Game(
 	state // State object
 );
 
-var taxiGame = new TTTGame(phaserGame);
+var raceGame = new MathRacing(phaserGame);
 
 function preload() {
-	taxiGame.preload();
+	raceGame.preload();
 }
 function init() {
-	taxiGame.init();
+	raceGame.init();
 }
 function create() {
-	taxiGame.create();
+	raceGame.create();
 }
 function update() {
-	taxiGame.update();
+	raceGame.update();
 }

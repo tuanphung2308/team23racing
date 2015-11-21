@@ -1,11 +1,11 @@
-var TTTGame = (function() {
+var MathRacing = (function() {
 
 	var ANGLE = 26.55;
 	var TILE_WIDTH = 68;
 	var SPEED = 5; //tiles speed1
 	var CAR_START_X = 30;
 
-	function TTTGame(phaserGame) {
+	function MathRacing(phaserGame) {
 		this.game = phaserGame;
 		this.arrTiles = []; //create an array to hold tiles
 
@@ -21,19 +21,19 @@ var TTTGame = (function() {
 		this.carX = CAR_START_X;
 	}
 
-	TTTGame.prototype.preload = function() {
+	MathRacing.prototype.preload = function() {
 		// This.game.load = instance of Phaser.Loader
 		this.game.load.image('tile_road_1', 'static/img/assets/tile_road_1.png'); //TILE ROAD
 		this.game.load.image('background', 'static/img/assets/sunset.png'); //Background
 		this.game.load.image('car', 'static/img/assets/taxi.png'); //DA CAR
 	};
 
-	TTTGame.prototype.init = function() {
+	MathRacing.prototype.init = function() {
 		this.game.stage.backgroundColor = '#9bd3e1';
 		this.game.add.plugin(Phaser.Plugin.Debug);
 	};
 
-	TTTGame.prototype.generateRoad = function() {
+	MathRacing.prototype.generateRoad = function() {
 		var x = this.roadStartPosition.x;
 		var y = this.roadStartPosition.y;
 
@@ -49,7 +49,7 @@ var TTTGame = (function() {
 		this.arrTiles.push(sprite);
 	}
 
-	TTTGame.prototype.generateQuestion = function() {
+	MathRacing.prototype.generateQuestion = function() {
 		var number1 = this.game.rnd.integerInRange(0, 25);
 		var number2 = this.game.rnd.integerInRange(0, 25);
 		var style = {
@@ -60,7 +60,7 @@ var TTTGame = (function() {
 		this.game.add.text(32, 64, 'What is ' + number1 + ' + ' + number2, style);
 	}
 
-	TTTGame.prototype.moveTiles = function(speed) {
+	MathRacing.prototype.moveTiles = function(speed) {
 		var i = this.arrTiles.length - 1;
 		// Reverse loop over all the tiles
 		while (i >= 0) {
@@ -86,7 +86,7 @@ var TTTGame = (function() {
 		}
 	}
 
-	TTTGame.prototype.calcPosOnRoadBy = function(xPos) {
+	MathRacing.prototype.calcPosOnRoadBy = function(xPos) {
 		//Triangle //Calculate position base on Xpos
 		//                 *
 		//                **
@@ -106,7 +106,7 @@ var TTTGame = (function() {
 		};
 	}
 
-	TTTGame.prototype.create = function() {
+	MathRacing.prototype.create = function() {
 		var numberOfLayers = 9;
 
 		for (var i = 0; i < numberOfLayers; i++) {
@@ -122,7 +122,7 @@ var TTTGame = (function() {
 		this.car.anchor.setTo(0.5, 1);
 	};
 
-	TTTGame.prototype.update = function() {
+	MathRacing.prototype.update = function() {
 		var posOnRoad = this.calcPosOnRoadBy(this.carX);
 		this.car.x = posOnRoad.x;
 		this.car.y = posOnRoad.y;
@@ -135,6 +135,6 @@ var TTTGame = (function() {
 		this.moveTiles(SPEED);
 	};
 
-	return TTTGame;
+	return MathRacing;
 
 })();
