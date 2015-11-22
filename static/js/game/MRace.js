@@ -50,14 +50,60 @@ var MathRacing = (function() {
 	}
 
 	MathRacing.prototype.generateQuestion = function() {
-		var number1 = this.game.rnd.integerInRange(0, 25);
-		var number2 = this.game.rnd.integerInRange(0, 25);
+		var x = this.game.rnd.integerInRange(1, 9);
+		var y = this.game.rnd.integerInRange(1, 9);
+		var opText;
+
+		function mathResult(a, b, op) {
+			switch (op) {
+				case 0:
+					opText = ' + ';
+					return a + b;
+					break;
+				case 1:
+					opText = ' - ';
+					return a - b;
+					break;
+				case 2:
+					opText = ' x ';
+					return a * b;
+					break;
+			}
+		}
+
+		var result = mathResult(x, y, this.game.rnd.integerInRange(0, 2));
 		var style = {
 			font: "28px Finger Paint",
 			fill: "#fff",
 			tabs: [150, 150, 200]
 		};
-		this.game.add.text(32, 64, 'What is ' + number1 + ' + ' + number2, style);
+
+		var questionText = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 16, 'What is ' + x + opText + y, style);
+		questionText.anchor.x = 0.5;
+		var resultText = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 8, 'Result is ' + result, style);
+		resultText.anchor.x = 0.5;
+
+		var answerChoices = [
+			result, this.game.rnd.integerInRange(result - 5, result + 5)
+		]
+
+		var leftOption, rightOption;
+		if (this.game.rnd.integerInRange(0, 1) == 0) {
+			leftOption = answerChoices[0];
+			rightOption = answerChoices[1];
+		} else {
+			leftOption = answerChoices[1];
+			rightOption = answerChoices[0];
+		}
+
+		var leftAnswerText = this.game.add.text(GAME_WIDTH / 4, GAME_HEIGHT / 5, leftOption, style);
+		leftAnswerText.anchor.x = 0.5;
+		var rightAnswerText = this.game.add.text(3 * GAME_WIDTH / 4, GAME_HEIGHT / 5, rightOption, style);
+		rightAnswerText.anchor.x = 0.5;
+
+		this.game.input.onDown.addOnce(leftAnswerText, this);
+		this.game.input.onDown.addOnce(rightAnswerText, this);
+
 	}
 
 	MathRacing.prototype.moveTiles = function(speed) {
