@@ -8,6 +8,7 @@ var MathRacing = (function() {
 	var displayInput;
 	var newQuestion;
 	var questionText;
+	var timer, timerEvent; //timer timer timer
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -54,56 +55,57 @@ var MathRacing = (function() {
 	}
 
 	function generateQuestion() {
-			var x = Math.floor(Math.random() * (9)) + 1;
-			var y = Math.floor(Math.random() * (9)) + 1;
-			var opText;
+		var x = Math.floor(Math.random() * (9)) + 1;
+		var y = Math.floor(Math.random() * (9)) + 1;
+		var opText;
 
-			function mathResult(a, b, op) {
-				switch (op) {
-					case 0:
-						opText = ' + ';
-						return a + b;
-						break;
-					case 1:
-						opText = ' - ';
-						return a - b;
-						break;
-					case 2:
-						opText = ' x ';
-						return a * b;
-						break;
-				}
-			}
-
-			var result = mathResult(x, y, Math.floor(Math.random() * (3)));
-			newQuestion = {
-				x: x,
-				y: y,
-				result: result,
-				op: opText
+		function mathResult(a, b, op) {
+			switch (op) {
+				case 0:
+					opText = ' + ';
+					return a + b;
+					break;
+				case 1:
+					opText = ' - ';
+					return a - b;
+					break;
+				case 2:
+					opText = ' x ';
+					return a * b;
+					break;
 			}
 		}
-		//**********************//
-		//Multiple Choice Ques**//
-		//*********************//
-		/*var dummyChoice = this.game.rnd.integerInRange(result - 5, result + 5);
-		while (dummyChoice == result) {
-			dummyChoice = this.game.rnd.integerInRange(result - 5, result + 5);
-		}
 
-		var leftOption, rightOption;
-		if (this.game.rnd.integerInRange(0, 1) == 0) {
-			leftOption = result;
-			rightOption = dummyChoice;
-		} else {
-			leftOption = dummyChoice;
-			rightOption = result;
+		var result = mathResult(x, y, Math.floor(Math.random() * (3)));
+		newQuestion = {
+			x: x,
+			y: y,
+			result: result,
+			op: opText
 		}
+		timerEvent = timer.add(Phaser.Timer.SECOND * 10, foofoofoo, this)
+	}
+	//**********************//
+	//Multiple Choice Ques**//
+	//*********************//
+	/*var dummyChoice = this.game.rnd.integerInRange(result - 5, result + 5);
+	while (dummyChoice == result) {
+		dummyChoice = this.game.rnd.integerInRange(result - 5, result + 5);
+	}
 
-		var leftAnswerText = this.game.add.text(GAME_WIDTH / 4, GAME_HEIGHT / 5, leftOption, style);
-		leftAnswerText.anchor.x = 0.5;
-		var rightAnswerText = this.game.add.text(3 * GAME_WIDTH / 4, GAME_HEIGHT / 5, rightOption, style);
-		rightAnswerText.anchor.x = 0.5; */
+	var leftOption, rightOption;
+	if (this.game.rnd.integerInRange(0, 1) == 0) {
+		leftOption = result;
+		rightOption = dummyChoice;
+	} else {
+		leftOption = dummyChoice;
+		rightOption = result;
+	}
+
+	var leftAnswerText = this.game.add.text(GAME_WIDTH / 4, GAME_HEIGHT / 5, leftOption, style);
+	leftAnswerText.anchor.x = 0.5;
+	var rightAnswerText = this.game.add.text(3 * GAME_WIDTH / 4, GAME_HEIGHT / 5, rightOption, style);
+	rightAnswerText.anchor.x = 0.5; */
 
 	MathRacing.prototype.moveTiles = function(speed) {
 		var i = this.arrTiles.length - 1;
@@ -162,7 +164,7 @@ var MathRacing = (function() {
 			}
 			displayInput.text = userTextInput;
 		} else if (keyCode == 13) {
-			userResult = userTextInput.replace(/^\D+/g, ''); //replace all non-digit with ''
+			userResult = userTextInput.replace(/[^\d-]/g, ''); //replace all non-digit with ''
 			console.log('user result: ' + userResult);
 			console.log('actual result: ' + result);
 			if (userResult == result) {
@@ -176,14 +178,19 @@ var MathRacing = (function() {
 			displayInput.text = userTextInput;
 		} else if (keyCode == 8) {
 			if (userTextInput.length > 16) {
-				userTextInput = userTextInput.slice(0, -1);
+				userTextInput = userTextInput.slice(0, 16);
 				displayInput.text = userTextInput;
 				console.log('after delete ' + userTextInput);
 			} else {
 				console.log('cannot delete more bro');
 			}
 		} else if (keyCode == 189) {
-			userTextInput = userTextInput.slice(0, 16) + '-' + userTextInput.slice(16);
+			if (userTextInput == 'Your answer is: _____') {
+				userTextInput = 'Your answer is: ' + '-'
+			} else {
+				userTextInput = userTextInput.slice(0, 16) + '-' + userTextInput.slice(16);
+			}
+			displayInput.text = userTextInput;
 			console.log('minus test ' + userTextInput)
 		}
 	}
@@ -201,12 +208,13 @@ var MathRacing = (function() {
 		this.car = new Phaser.Sprite(this.game, GAME_WIDTH / 2, GAME_HEIGHT / 2, 'car');
 		this.game.world.addChild(this.car);
 		this.car.anchor.setTo(0.5, 1);
+
+		timer = this.game.time.create();
 		displayInput = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 4, userTextInput, {
 			font: "15px Arial",
 			fill: "#ff0044",
 			align: "center"
 		});
-
 		displayInput.anchor.setTo(0.5, 0.5);
 		//this.game.input.keyboard.addCallbacks(this, null, null, keyPress);
 
@@ -228,7 +236,12 @@ var MathRacing = (function() {
 			console.log('key code sent ' + e.keyCode);
 			keyPress(e.keyCode, newQuestion.result);
 		}
+		timer.start();
 	};
+
+	function foofoofoo() {
+
+	}
 
 	MathRacing.prototype.update = function() {
 		var posOnRoad = this.calcPosOnRoadBy(this.carX);
@@ -240,6 +253,12 @@ var MathRacing = (function() {
 			this.generateRoad();
 		}
 		this.moveTiles(SPEED);
+		if (timer.running) {
+            this.game.debug.text(Math.round((timerEvent.delay - timer.ms) / 1000), 2, 14, "#ff0");
+        }
+        else {
+            this.game.debug.text("Done!", 2, 14, "#0f0");
+        }
 	};
 
 	return MathRacing;
