@@ -6,6 +6,8 @@ var MathRacing = (function() {
 	var CAR_START_X = 30;
 	var userTextInput = 'Your answer is: _____';
 	var displayInput;
+	var newQuestion;
+	var questionText;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -51,40 +53,36 @@ var MathRacing = (function() {
 		this.arrTiles.push(sprite);
 	}
 
-	MathRacing.prototype.generateQuestion = function() {
-		var x = this.game.rnd.integerInRange(1, 9);
-		var y = this.game.rnd.integerInRange(1, 9);
-		var opText;
+	function generateQuestion() {
+			var x = Math.floor(Math.random() * (9)) + 1;
+			var y = Math.floor(Math.random() * (9)) + 1;
+			var opText;
 
-		function mathResult(a, b, op) {
-			switch (op) {
-				case 0:
-					opText = ' + ';
-					return a + b;
-					break;
-				case 1:
-					opText = ' - ';
-					return a - b;
-					break;
-				case 2:
-					opText = ' x ';
-					return a * b;
-					break;
+			function mathResult(a, b, op) {
+				switch (op) {
+					case 0:
+						opText = ' + ';
+						return a + b;
+						break;
+					case 1:
+						opText = ' - ';
+						return a - b;
+						break;
+					case 2:
+						opText = ' x ';
+						return a * b;
+						break;
+				}
+			}
+
+			var result = mathResult(x, y, Math.floor(Math.random() * (3)));
+			newQuestion = {
+				x: x,
+				y: y,
+				result: result,
+				op: opText
 			}
 		}
-
-		var result = mathResult(x, y, this.game.rnd.integerInRange(0, 2));
-		var style = {
-			font: "28px Finger Paint",
-			fill: "#fff",
-			tabs: [150, 150, 200]
-		};
-
-		var questionText = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 16, 'What is ' + x + opText + y, style);
-		questionText.anchor.x = 0.5;
-		var resultText = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 8, 'Result is ' + result, style);
-		resultText.anchor.x = 0.5;
-
 		//**********************//
 		//Multiple Choice Ques**//
 		//*********************//
@@ -106,8 +104,6 @@ var MathRacing = (function() {
 		leftAnswerText.anchor.x = 0.5;
 		var rightAnswerText = this.game.add.text(3 * GAME_WIDTH / 4, GAME_HEIGHT / 5, rightOption, style);
 		rightAnswerText.anchor.x = 0.5; */
-
-	}
 
 	MathRacing.prototype.moveTiles = function(speed) {
 		var i = this.arrTiles.length - 1;
@@ -154,6 +150,44 @@ var MathRacing = (function() {
 		};
 	}
 
+	function keyPress(keyCode, result) {
+		//if (char >= 0 && char < 10) {
+		//keyCode from 47 to 59 is 0 -> 9
+		var userResult;
+		if (keyCode > 47 && keyCode < 58) {
+			if (userTextInput == 'Your answer is: _____') {
+				userTextInput = 'Your answer is: ' + String.fromCharCode(keyCode);
+			} else {
+				userTextInput = userTextInput + String.fromCharCode(keyCode);
+			}
+			displayInput.text = userTextInput;
+		} else if (keyCode == 13) {
+			userResult = userTextInput.replace(/^\D+/g, ''); //replace all non-digit with ''
+			console.log('user result: ' + userResult);
+			console.log('actual result: ' + result);
+			if (userResult == result) {
+				console.log('gratz');
+				generateQuestion();
+				questionText.text = 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y;
+			} else {
+				console.log('wrong bro');
+			}
+			userTextInput = 'Your answer is: _____';
+			displayInput.text = userTextInput;
+		} else if (keyCode == 8) {
+			if (userTextInput.length > 16) {
+				userTextInput = userTextInput.slice(0, -1);
+				displayInput.text = userTextInput;
+				console.log('after delete ' + userTextInput);
+			} else {
+				console.log('cannot delete more bro');
+			}
+		} else if (keyCode == 189) {
+			userTextInput = userTextInput.slice(0, 16) + '-' + userTextInput.slice(16);
+			console.log('minus test ' + userTextInput)
+		}
+	}
+
 	MathRacing.prototype.create = function() {
 		var numberOfLayers = 9;
 
@@ -164,7 +198,6 @@ var MathRacing = (function() {
 		}
 
 		this.generateRoad();
-		this.generateQuestion();
 		this.car = new Phaser.Sprite(this.game, GAME_WIDTH / 2, GAME_HEIGHT / 2, 'car');
 		this.game.world.addChild(this.car);
 		this.car.anchor.setTo(0.5, 1);
@@ -175,28 +208,32 @@ var MathRacing = (function() {
 		});
 
 		displayInput.anchor.setTo(0.5, 0.5);
-		this.game.input.keyboard.addCallbacks(this, null, null, keyPress);
+		//this.game.input.keyboard.addCallbacks(this, null, null, keyPress);
+
+		var style = {
+			font: "28px Finger Paint",
+			fill: "#fff",
+			tabs: [150, 150, 200]
+		};
+
+		generateQuestion();
+		questionText = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 16, 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y, style);
+		questionText.anchor.x = 0.5;
+		this.game.input.keyboard.addKeyCapture(8); // no backspace
+		var deleteKey = this.game.input.keyboard.addKey(8);
+		deleteKey.onDown.add(function() {
+			keyPress(8, newQuestion.result);
+		}, this);
+		this.game.input.keyboard.onDownCallback = function(e) {
+			console.log('key code sent ' + e.keyCode);
+			keyPress(e.keyCode, newQuestion.result);
+		}
 	};
-
-	function keyPress(char) {
-		if (char >= 0 && char < 10) {
-			if (userTextInput == 'Your answer is: _____') {
-				userTextInput = 'Your answer is:' + char;
-			} else {
-				userTextInput = userTextInput + char;
-			}
-			displayInput.text = userTextInput;
-		}
-		else if (char == '<br>'){
-
-		}
-	}
 
 	MathRacing.prototype.update = function() {
 		var posOnRoad = this.calcPosOnRoadBy(this.carX);
 		this.car.x = posOnRoad.x;
 		this.car.y = posOnRoad.y;
-
 		this.numberOfLoop++;
 		if (this.numberOfLoop > TILE_WIDTH / SPEED) {
 			this.numberOfLoop = 0;
