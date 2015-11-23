@@ -4,6 +4,8 @@ var MathRacing = (function() {
 	var TILE_WIDTH = 68;
 	var SPEED = 5; //tiles speed1
 	var CAR_START_X = 30;
+	var userTextInput = 'Your answer is: _____';
+	var displayInput;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -83,26 +85,27 @@ var MathRacing = (function() {
 		var resultText = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 8, 'Result is ' + result, style);
 		resultText.anchor.x = 0.5;
 
-		var answerChoices = [
-			result, this.game.rnd.integerInRange(result - 5, result + 5)
-		]
+		//**********************//
+		//Multiple Choice Ques**//
+		//*********************//
+		/*var dummyChoice = this.game.rnd.integerInRange(result - 5, result + 5);
+		while (dummyChoice == result) {
+			dummyChoice = this.game.rnd.integerInRange(result - 5, result + 5);
+		}
 
 		var leftOption, rightOption;
 		if (this.game.rnd.integerInRange(0, 1) == 0) {
-			leftOption = answerChoices[0];
-			rightOption = answerChoices[1];
+			leftOption = result;
+			rightOption = dummyChoice;
 		} else {
-			leftOption = answerChoices[1];
-			rightOption = answerChoices[0];
+			leftOption = dummyChoice;
+			rightOption = result;
 		}
 
 		var leftAnswerText = this.game.add.text(GAME_WIDTH / 4, GAME_HEIGHT / 5, leftOption, style);
 		leftAnswerText.anchor.x = 0.5;
 		var rightAnswerText = this.game.add.text(3 * GAME_WIDTH / 4, GAME_HEIGHT / 5, rightOption, style);
-		rightAnswerText.anchor.x = 0.5;
-
-		this.game.input.onDown.addOnce(leftAnswerText, this);
-		this.game.input.onDown.addOnce(rightAnswerText, this);
+		rightAnswerText.anchor.x = 0.5; */
 
 	}
 
@@ -127,7 +130,6 @@ var MathRacing = (function() {
 				}
 				j--;
 			}
-
 			i--;
 		}
 	}
@@ -166,7 +168,29 @@ var MathRacing = (function() {
 		this.car = new Phaser.Sprite(this.game, GAME_WIDTH / 2, GAME_HEIGHT / 2, 'car');
 		this.game.world.addChild(this.car);
 		this.car.anchor.setTo(0.5, 1);
+		displayInput = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 4, userTextInput, {
+			font: "15px Arial",
+			fill: "#ff0044",
+			align: "center"
+		});
+
+		displayInput.anchor.setTo(0.5, 0.5);
+		this.game.input.keyboard.addCallbacks(this, null, null, keyPress);
 	};
+
+	function keyPress(char) {
+		if (char >= 0 && char < 10) {
+			if (userTextInput == 'Your answer is: _____') {
+				userTextInput = 'Your answer is:' + char;
+			} else {
+				userTextInput = userTextInput + char;
+			}
+			displayInput.text = userTextInput;
+		}
+		else if (char == '<br>'){
+
+		}
+	}
 
 	MathRacing.prototype.update = function() {
 		var posOnRoad = this.calcPosOnRoadBy(this.carX);
