@@ -16,11 +16,19 @@ var MathRacing = (function() {
 
 		this.numberOfLoop = 0; //count howmany update so far
 
+		this.mouseTouchDown = false;
+
+		this.hasStarted = false;
+
 		//road start point
 		this.roadStartPosition = {
 			x: GAME_WIDTH + 100,
 			y: GAME_HEIGHT / 2 - 100
 		};
+
+		this.roadCount = 0; // Number of road tiles
+		this.nextObstacleIndex = 0; // Index of where the obstacle tile should render
+		this.arrObstacles = []; // Array of all the objects that are deadly for the taxi
 
 		this.car = undefined;
 		this.carX = CAR_START_X;
@@ -31,6 +39,7 @@ var MathRacing = (function() {
 		this.game.load.image('tile_road_1', 'static/img/assets/tile_road_1.png'); //TILE ROAD
 		this.game.load.image('background', 'static/img/assets/sunset.png'); //Background
 		this.game.load.image('car', 'static/img/assets/taxi.png'); //DA CAR
+		this.game.load.image('obstacle_1', 'static/img/assets/obstacle_1.png'); //obstacles
 	};
 
 	MathRacing.prototype.init = function() {
@@ -38,21 +47,65 @@ var MathRacing = (function() {
 		this.game.add.plugin(Phaser.Plugin.Debug);
 	};
 
+	MathRacing.prototype.checkObstacles = function() {
+		var i = this.arrObstacles.length - 1;
+
+		while (i >= 0) {
+			var sprite = this.arrObstacles[i];
+
+			// We don't want to check on items that are past the taxi
+			if (sprite.x < this.car.x - 10) {
+				this.arrObstacles.splice(i, 1);
+			}
+
+			// Distance formula
+			var dx = sprite.x - this.car.x;
+			dx = Math.pow(dx, 2);
+			var dy = (sprite.y - sprite.height / 2) - this.car.y;
+			dy = Math.pow(dy, 2);
+			var distance = Math.sqrt(dx + dy);
+
+			if (distance < 25) {
+				console.log('take a break ;)');
+				SPEED = 0;
+			}
+			i--;
+		}
+	};
+
 	MathRacing.prototype.generateRoad = function() {
-		var x = this.roadStartPosition.x;
-		var y = this.roadStartPosition.y;
+		this.roadCount++; // Increment the number of road tiles
+		var tile = 'tile_road_1'; // Store the basic road tile in here
+		var isObstacle = false; // If deadly, we add it to the arrObstacles array
+
+		if (this.roadCount > this.nextObstacleIndex && this.hasStarted) {
+			this.calculateNextObstacleIndex();
+			tile = 'obstacle_1';
+			isObstacle = true;
+		}
 
 		//manually create a sprite and add it
 		//'addChildAt' method to add every sprite after first
-		var sprite = new Phaser.Sprite(this.game, this.roadStartPosition.x, this.roadStartPosition.y, 'tile_road_1');
+		var sprite = new Phaser.Sprite(this.game, this.roadStartPosition.x, this.roadStartPosition.y, tile);
 		this.arrTiles[4].addChildAt(sprite, 0);
 
 		//set the anchor to the bottom center
 		sprite.anchor.setTo(0.5, 1.0);
 
+		if (isObstacle) {
+			this.arrObstacles.push(sprite);
+		}
 		//push sprite to the array arrTiles
 		this.arrTiles.push(sprite);
 	}
+
+	MathRacing.prototype.calculateNextObstacleIndex = function() {
+		// We calculate an index in the future, with some randomness (between 3 and 10 tiles in the future).
+		var minimumOffset = 3;
+		var maximumOffset = 10;
+		var num = Math.random() * (maximumOffset - minimumOffset);
+		this.nextObstacleIndex = this.roadCount + Math.round(num) + minimumOffset;
+	};
 
 	function generateQuestion() {
 		var x = Math.floor(Math.random() * (9)) + 1;
@@ -243,7 +296,28 @@ var MathRacing = (function() {
 
 	}
 
+	MathRacing.prototype.touchDown = function() {
+		this.mouseTouchDown = true;
+		if (!this.hasStarted) {
+			this.hasStarted = true;
+			console.log('game started!');
+		}
+	};
+	MathRacing.prototype.touchUp = function() {
+		this.mouseTouchDown = false;
+	};
+
 	MathRacing.prototype.update = function() {
+		if (this.game.input.activePointer.isDown) {
+			if (!this.mouseTouchDown) {
+				this.touchDown();
+			}
+		} else {
+			if (this.mouseTouchDown) {
+				this.touchUp();
+			}
+		}
+		this.checkObstacles();
 		var posOnRoad = this.calcPosOnRoadBy(this.carX);
 		this.car.x = posOnRoad.x;
 		this.car.y = posOnRoad.y;
@@ -254,11 +328,10 @@ var MathRacing = (function() {
 		}
 		this.moveTiles(SPEED);
 		if (timer.running) {
-            this.game.debug.text(Math.round((timerEvent.delay - timer.ms) / 1000), 2, 14, "#ff0");
-        }
-        else {
-            this.game.debug.text("Done!", 2, 14, "#0f0");
-        }
+			this.game.debug.text(Math.round((timerEvent.delay - timer.ms) / 1000), 2, 14, "#ff0");
+		} else {
+			this.game.debug.text("Done!", 2, 14, "#0f0");
+		}
 	};
 
 	return MathRacing;
