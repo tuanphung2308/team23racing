@@ -1,5 +1,6 @@
 var MathRacing = (function() {
 
+	var JUMP_HEIGHT = 7;
 	var ANGLE = 26.55;
 	var TILE_WIDTH = 68;
 	var SPEED = 5; //tiles speed1
@@ -10,6 +11,7 @@ var MathRacing = (function() {
 	var questionText;
 	var timer, timerEvent; //timer timer timer
 	var answered = false;
+	var isJumping = false;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -33,6 +35,8 @@ var MathRacing = (function() {
 
 		this.car = undefined;
 		this.carX = CAR_START_X;
+		this.jumpSpeed = JUMP_HEIGHT;
+		this.currentJumpHeight = 0;
 	}
 
 	MathRacing.prototype.preload = function() {
@@ -61,7 +65,7 @@ var MathRacing = (function() {
 			dy = Math.pow(dy, 2);
 			var distance = Math.sqrt(dx + dy);
 
-			if (distance < 25) {
+			if (distance < 35) {
 				if (!answered) {
 					console.log('take a break ;)');
 					SPEED = 0;
@@ -70,8 +74,7 @@ var MathRacing = (function() {
 					this.arrObstacles.splice(i, 1); //remove obstacle that passed alraedy
 					answered = false;
 				}
-			} else {
-			}
+			} else {}
 			i++;
 		}
 	};
@@ -226,6 +229,7 @@ var MathRacing = (function() {
 			if (userResult == result) {
 				console.log('gratz');
 				answered = true;
+				isJumping = true;
 				generateQuestion();
 				questionText.text = 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y;
 			} else {
@@ -300,6 +304,15 @@ var MathRacing = (function() {
 
 	}
 
+	MathRacing.prototype.carJump = function() {
+		this.currentJumpHeight -= this.jumpSpeed;
+		this.jumpSpeed -= 0.5;
+		if (this.jumpSpeed < -JUMP_HEIGHT) {
+			this.jumpSpeed = JUMP_HEIGHT;
+			isJumping = false;
+		}
+	};
+
 	MathRacing.prototype.touchDown = function() {
 		this.mouseTouchDown = true;
 		if (!this.hasStarted) {
@@ -321,10 +334,14 @@ var MathRacing = (function() {
 				this.touchUp();
 			}
 		}
+
+		if (isJumping) {
+			this.carJump();
+		}
 		this.checkObstacles();
 		var posOnRoad = this.calcPosOnRoadBy(this.carX);
 		this.car.x = posOnRoad.x;
-		this.car.y = posOnRoad.y;
+		this.car.y = posOnRoad.y + this.currentJumpHeight;
 		this.numberOfLoop++;
 		if (this.numberOfLoop > TILE_WIDTH / SPEED) {
 			this.numberOfLoop = 0;
