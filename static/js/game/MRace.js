@@ -45,11 +45,22 @@ var MathRacing = (function() {
 		this.game.load.image('background', 'static/img/assets/sunset.png'); //Background
 		this.game.load.image('car', 'static/img/assets/taxi.png'); //DA CAR
 		this.game.load.image('obstacle_1', 'static/img/assets/obstacle_1.png'); //obstacles
+		this.game.load.image('button_0', 'static/img/assets/number0.png');
+		this.game.load.image('button_1', 'static/img/assets/number1.png');
+		this.game.load.image('button_2', 'static/img/assets/number2.png');
+		this.game.load.image('button_3', 'static/img/assets/number3.png');
+		this.game.load.image('button_4', 'static/img/assets/number4.png');
+		this.game.load.image('button_5', 'static/img/assets/number5.png');
+		this.game.load.image('button_6', 'static/img/assets/number6.png');
+		this.game.load.image('button_7', 'static/img/assets/number7.png');
+		this.game.load.image('button_8', 'static/img/assets/number8.png');
+		this.game.load.image('button_9', 'static/img/assets/number9.png');
+		this.game.load.image('button_minus', 'static/img/assets/minus.png');
+		this.game.load.image('button_enter', 'static/img/assets/enter.png');
 	};
 
 	MathRacing.prototype.init = function() {
 		this.game.stage.backgroundColor = '#9bd3e1';
-		this.game.add.plugin(Phaser.Plugin.Debug);
 	};
 
 	MathRacing.prototype.checkObstacles = function() {
@@ -142,7 +153,6 @@ var MathRacing = (function() {
 			result: result,
 			op: opText
 		}
-		timerEvent = timer.add(Phaser.Timer.SECOND * 10, foofoofoo, this)
 	}
 	//**********************//
 	//Multiple Choice Ques**//
@@ -245,7 +255,7 @@ var MathRacing = (function() {
 			} else {
 				console.log('cannot delete more bro');
 			}
-		} else if (keyCode == 189) {
+		} else if (keyCode == 189 || keyCode == 109) {
 			if (userTextInput == 'Your answer is: _____') {
 				userTextInput = 'Your answer is: ' + '-'
 			} else {
@@ -265,12 +275,29 @@ var MathRacing = (function() {
 			this.arrTiles.push(layer);
 		}
 
+		var buttonStartX = (GAME_WIDTH - 256) / 2;
+		var buttonStartY = GAME_HEIGHT - 64
+
+		this.game.add.button(buttonStartX, buttonStartY - 128, 'button_1', button1down, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 64, buttonStartY - 128, 'button_2', button2down, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 128, buttonStartY - 128, 'button_3', button3down, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 192, buttonStartY - 128, 'button_4', button4down, this, 2, 1, 0);
+		this.game.add.button(buttonStartX, buttonStartY - 64, 'button_5', button5down, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 64, buttonStartY - 64, 'button_6', button6down, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 128, buttonStartY - 64, 'button_7', button7down, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 192, buttonStartY - 64, 'button_8', button8down, this, 2, 1, 0);
+		this.game.add.button(buttonStartX, buttonStartY, 'button_9', button9down, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 64, buttonStartY, 'button_0', button0down, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 128, buttonStartY, 'button_minus', buttonMinusDown, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 192, buttonStartY, 'button_enter', buttonEnterDown, this, 2, 1, 0);
+
+
+
 		this.generateRoad();
 		this.car = new Phaser.Sprite(this.game, GAME_WIDTH / 2, GAME_HEIGHT / 2, 'car');
 		this.game.world.addChild(this.car);
 		this.car.anchor.setTo(0.5, 1);
 
-		timer = this.game.time.create();
 		displayInput = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 4, userTextInput, {
 			font: "15px Arial",
 			fill: "#ff0044",
@@ -297,11 +324,54 @@ var MathRacing = (function() {
 			console.log('key code sent ' + e.keyCode);
 			keyPress(e.keyCode, newQuestion.result);
 		}
-		timer.start();
 	};
 
-	function foofoofoo() {
+	function button0down() {
+		keyPress(48, newQuestion.result);
+	}
 
+	function button1down() {
+		keyPress(49, newQuestion.result);
+	}
+
+	function button2down() {
+		keyPress(50, newQuestion.result);
+	}
+
+	function button3down() {
+		keyPress(51, newQuestion.result);
+	}
+
+	function button4down() {
+		keyPress(52, newQuestion.result);
+	}
+
+	function button5down() {
+		keyPress(53, newQuestion.result);
+	}
+
+	function button6down() {
+		keyPress(54, newQuestion.result);
+	}
+
+	function button7down() {
+		keyPress(55, newQuestion.result);
+	}
+
+	function button8down() {
+		keyPress(56, newQuestion.result);
+	}
+
+	function button9down() {
+		keyPress(57, newQuestion.result);
+	}
+
+	function buttonEnterDown() {
+		keyPress(13, newQuestion.result);
+	}
+
+	function buttonMinusDown() {
+		keyPress(189, newQuestion.result);
 	}
 
 	MathRacing.prototype.carJump = function() {
@@ -348,11 +418,6 @@ var MathRacing = (function() {
 			this.generateRoad();
 		}
 		this.moveTiles(SPEED);
-		if (timer.running) {
-			this.game.debug.text(Math.round((timerEvent.delay - timer.ms) / 1000), 2, 14, "#ff0");
-		} else {
-			this.game.debug.text("Done!", 2, 14, "#0f0");
-		}
 	};
 
 	return MathRacing;
