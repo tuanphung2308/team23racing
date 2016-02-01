@@ -9,6 +9,7 @@ var MathRacing = (function() {
 	var newQuestion;
 	var questionText;
 	var timer, timerEvent; //timer timer timer
+	var answered = false;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -48,15 +49,10 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.checkObstacles = function() {
-		var i = this.arrObstacles.length - 1;
+		var i = 0;
 
-		while (i >= 0) {
+		while (i <= this.arrObstacles.length - 1) {
 			var sprite = this.arrObstacles[i];
-
-			// We don't want to check on items that are past the taxi
-			if (sprite.x < this.car.x - 10) {
-				this.arrObstacles.splice(i, 1);
-			}
 
 			// Distance formula
 			var dx = sprite.x - this.car.x;
@@ -66,10 +62,17 @@ var MathRacing = (function() {
 			var distance = Math.sqrt(dx + dy);
 
 			if (distance < 25) {
-				console.log('take a break ;)');
-				SPEED = 0;
+				if (!answered) {
+					console.log('take a break ;)');
+					SPEED = 0;
+				} else {
+					SPEED = 5;
+					this.arrObstacles.splice(i, 1); //remove obstacle that passed alraedy
+					answered = false;
+				}
+			} else {
 			}
-			i--;
+			i++;
 		}
 	};
 
@@ -222,6 +225,7 @@ var MathRacing = (function() {
 			console.log('actual result: ' + result);
 			if (userResult == result) {
 				console.log('gratz');
+				answered = true;
 				generateQuestion();
 				questionText.text = 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y;
 			} else {
