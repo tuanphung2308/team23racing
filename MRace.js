@@ -9,9 +9,9 @@ var MathRacing = (function() {
 	var displayInput;
 	var newQuestion;
 	var questionText;
-	var timer, timerEvent; //timer timer timer
 	var answered = false;
 	var isJumping = false;
+	var timer;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -57,7 +57,18 @@ var MathRacing = (function() {
 		this.game.load.image('button_9', 'static/img/assets/number9.png');
 		this.game.load.image('button_minus', 'static/img/assets/minus.png');
 		this.game.load.image('button_enter', 'static/img/assets/enter.png');
+		this.game.load.image('button_delete', 'static/img/assets/empty.png');
 	};
+
+	MathRacing.prototype.menu = function() {
+		this.game.add.text(80, 80, 'RaceGame!');
+		var wkey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+		wkey.onDown.addOnce(this.menuDown, this);
+	}
+
+	function menuDown() {
+		this.init();
+	}
 
 	MathRacing.prototype.init = function() {
 		this.game.stage.backgroundColor = '#9bd3e1';
@@ -78,14 +89,43 @@ var MathRacing = (function() {
 
 			if (distance < 35) {
 				if (!answered) {
+					questionText.visible = true;
+					displayInput.visible = true;
+					questionText.text = 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y;
 					console.log('take a break ;)');
 					SPEED = 0;
+					timer.add(5000, this.alert, this);
+					timer.start();
 				} else {
 					SPEED = 5;
 					this.arrObstacles.splice(i, 1); //remove obstacle that passed alraedy
 					answered = false;
 				}
-			} else {}
+			} else {
+				timer.destroy();
+			}
+			i++;
+		}
+	};
+	MathRacing.prototype.alert = function() {
+		if (!answered) {
+			/*alertTween = game.add.sprite(100, 100, "Wrong!");
+			tween = game.add.tween(alertTween).to({
+				y: 245
+			}, 2400, Phaser.Easing.Bounce.Out, true);*/
+		} else {}
+	};
+
+	MathRacing.prototype.generateLevel = function() {
+		var i = 0;
+		// Calculate how many tiles fit on screen and add 2 just to be safe
+		var numberOfTiles = Math.ceil(GAME_WIDTH / TILE_WIDTH) + 2;
+		while (i <= numberOfTiles) {
+			this.generateRoad();
+			if (i != numberOfTiles) {
+				// Move the tiles by TILE_WIDTH
+				this.moveTiles(TILE_WIDTH);
+			};
 			i++;
 		}
 	};
@@ -117,8 +157,8 @@ var MathRacing = (function() {
 	}
 
 	MathRacing.prototype.calculateNextObstacleIndex = function() {
-		// We calculate an index in the future, with some randomness (between 3 and 10 tiles in the future).
-		var minimumOffset = 3;
+		// We calculate an index in the future, with some randomness (between 8 and 10 tiles in the future).
+		var minimumOffset = 8;
 		var maximumOffset = 10;
 		var num = Math.random() * (maximumOffset - minimumOffset);
 		this.nextObstacleIndex = this.roadCount + Math.round(num) + minimumOffset;
@@ -225,44 +265,48 @@ var MathRacing = (function() {
 		//if (char >= 0 && char < 10) {
 		//keyCode from 47 to 59 is 0 -> 9
 		var userResult;
-		if (keyCode > 47 && keyCode < 58) {
-			if (userTextInput == 'Your answer is: _____') {
-				userTextInput = 'Your answer is: ' + String.fromCharCode(keyCode);
-			} else {
-				userTextInput = userTextInput + String.fromCharCode(keyCode);
-			}
-			displayInput.text = userTextInput;
-		} else if (keyCode == 13) {
-			userResult = userTextInput.replace(/[^\d-]/g, ''); //replace all non-digit with ''
-			console.log('user result: ' + userResult);
-			console.log('actual result: ' + result);
-			if (userResult == result) {
-				console.log('gratz');
-				answered = true;
-				isJumping = true;
-				generateQuestion();
-				questionText.text = 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y;
-			} else {
-				console.log('wrong bro');
-			}
-			userTextInput = 'Your answer is: _____';
-			displayInput.text = userTextInput;
-		} else if (keyCode == 8) {
-			if (userTextInput.length > 16) {
-				userTextInput = userTextInput.slice(0, 16);
+		if (displayInput.visible == true) {
+			if (keyCode > 47 && keyCode < 58) {
+				if (userTextInput == 'Your answer is: _____') {
+					userTextInput = 'Your answer is: ' + String.fromCharCode(keyCode);
+				} else {
+					userTextInput = userTextInput + String.fromCharCode(keyCode);
+				}
 				displayInput.text = userTextInput;
-				console.log('after delete ' + userTextInput);
-			} else {
-				console.log('cannot delete more bro');
+			} else if (keyCode == 13) {
+				userResult = userTextInput.replace(/[^\d-]/g, ''); //replace all non-digit with ''
+				console.log('user result: ' + userResult);
+				console.log('actual result: ' + result);
+				if (userResult == result) {
+					console.log('gratz');
+					generateQuestion();
+					questionText.visible = false;
+					displayInput.visible = false;
+					questionText.text = 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y;
+					answered = true;
+					isJumping = true;
+				} else {
+					console.log('wrong bro');
+				}
+				userTextInput = 'Your answer is: _____';
+				displayInput.text = userTextInput;
+			} else if (keyCode == 8) {
+				if (userTextInput.length > 16) {
+					userTextInput = userTextInput.slice(0, 16);
+					displayInput.text = userTextInput;
+					console.log('after delete ' + userTextInput);
+				} else {
+					console.log('cannot delete more bro');
+				}
+			} else if (keyCode == 189 || keyCode == 109) {
+				if (userTextInput == 'Your answer is: _____') {
+					userTextInput = 'Your answer is: ' + '-'
+				} else {
+					userTextInput = userTextInput.slice(0, 16) + '-' + userTextInput.slice(16);
+				}
+				displayInput.text = userTextInput;
+				console.log('minus test ' + userTextInput)
 			}
-		} else if (keyCode == 189 || keyCode == 109) {
-			if (userTextInput == 'Your answer is: _____') {
-				userTextInput = 'Your answer is: ' + '-'
-			} else {
-				userTextInput = userTextInput.slice(0, 16) + '-' + userTextInput.slice(16);
-			}
-			displayInput.text = userTextInput;
-			console.log('minus test ' + userTextInput)
 		}
 	}
 
@@ -289,10 +333,12 @@ var MathRacing = (function() {
 		this.game.add.button(buttonStartX, buttonStartY, 'button_9', button9down, this, 2, 1, 0);
 		this.game.add.button(buttonStartX + 64, buttonStartY, 'button_0', button0down, this, 2, 1, 0);
 		this.game.add.button(buttonStartX + 128, buttonStartY, 'button_minus', buttonMinusDown, this, 2, 1, 0);
-		this.game.add.button(buttonStartX + 192, buttonStartY, 'button_enter', buttonEnterDown, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 192, buttonStartY, 'button_delete', buttonDelDown, this, 2, 1, 0);
+		this.game.add.button(buttonStartX + 256, buttonStartY, 'button_enter', buttonEnterDown, this, 2, 1, 0);
 
+		timer = this.game.time.create(false);
 
-
+		this.generateLevel();
 		this.generateRoad();
 		this.car = new Phaser.Sprite(this.game, GAME_WIDTH / 2, GAME_HEIGHT / 2, 'car');
 		this.game.world.addChild(this.car);
@@ -303,7 +349,14 @@ var MathRacing = (function() {
 			fill: "#ff0044",
 			align: "center"
 		});
+		startDisplay = this.game.add.text(GAME_WIDTH / 2 - 130, GAME_HEIGHT / 4, "TAP TO START!", {
+			font: "40px Arial",
+			fill: "#ff0044",
+			align: "center"
+		});
+		startDisplay.visible = false;
 		displayInput.anchor.setTo(0.5, 0.5);
+		displayInput.visible = false;
 		//this.game.input.keyboard.addCallbacks(this, null, null, keyPress);
 
 		var style = {
@@ -311,10 +364,10 @@ var MathRacing = (function() {
 			fill: "#fff",
 			tabs: [150, 150, 200]
 		};
-
 		generateQuestion();
-		questionText = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 16, 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y, style);
+		questionText = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 16, " ", style);
 		questionText.anchor.x = 0.5;
+		questionText.visible = false;
 		this.game.input.keyboard.addKeyCapture(8); // no backspace
 		var deleteKey = this.game.input.keyboard.addKey(8);
 		deleteKey.onDown.add(function() {
@@ -374,6 +427,10 @@ var MathRacing = (function() {
 		keyPress(189, newQuestion.result);
 	}
 
+	function buttonDelDown() {
+		keyPress(8, newQuestion.result);
+	}
+
 	MathRacing.prototype.carJump = function() {
 		this.currentJumpHeight -= this.jumpSpeed;
 		this.jumpSpeed -= 0.5;
@@ -395,6 +452,11 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.update = function() {
+		if (!this.hasStarted) {
+			startDisplay.visible = true;
+		} else {
+			startDisplay.visible = false;
+		}
 		if (this.game.input.activePointer.isDown) {
 			if (!this.mouseTouchDown) {
 				this.touchDown();
@@ -418,6 +480,11 @@ var MathRacing = (function() {
 			this.generateRoad();
 		}
 		this.moveTiles(SPEED);
+	};
+
+	MathRacing.prototype.render = function() {
+		var x = parseInt(timer.duration / 1000);
+		this.game.debug.text('Time left: ' + x, 32, 32);
 	};
 
 	return MathRacing;
