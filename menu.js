@@ -1,4 +1,7 @@
 var menuState = {
+	init: function() {
+		this.game.stage.backgroundColor = '#9bd3e1';
+	},
 	create: function() {
 		var menuLabel = this.game.add.text(50, 80, 'Race Game!', {
 			font: "70px Arial",

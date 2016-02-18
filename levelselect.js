@@ -9,6 +9,9 @@ var leftArrow;
 var rightArrow;
 
 levelSelect = {
+	init: function() {
+		this.game.stage.backgroundColor = '#9bd3e1';
+	},
 	create: function() {
 		// how many pages are needed to show all levels?
 		// CAUTION!! EACH PAGE SHOULD HAVE THE SAME AMOUNT OF LEVELS, THAT IS
