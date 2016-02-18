@@ -486,7 +486,7 @@ var MathRacing = (function() {
 			this.generateRoad();
 		}
 		this.moveTiles(SPEED);
-		if (totalAnswer == 3) this.finish();
+		if (totalAnswer == 10) this.finish();
 
 	};
 
