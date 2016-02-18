@@ -27,6 +27,7 @@ game.state.add("menuState", menuState);
 game.state.add("LevelSelect", levelSelect);
 game.state.add("PlayLevel", playLevel);
 game.state.add("MathRacing", MathRacing);
+game.state.add("resultState", resultState);
 
 // we'll start loading
 game.state.start("Loading");

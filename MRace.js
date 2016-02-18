@@ -12,6 +12,9 @@ var MathRacing = (function() {
 	var answered = false;
 	var isJumping = false;
 	var timer;
+	var score = 0;
+	var correctAnswer = 0;
+	var totalAnswer = 0;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -20,6 +23,7 @@ var MathRacing = (function() {
 		this.numberOfLoop = 0; //count howmany update so far
 
 		this.mouseTouchDown = false;
+		this.seenObstacle = 0;
 
 		this.hasStarted = false;
 
@@ -60,16 +64,6 @@ var MathRacing = (function() {
 		this.game.load.image('button_delete', 'static/img/assets/empty.png');
 	};
 
-	MathRacing.prototype.menu = function() {
-		this.game.add.text(80, 80, 'RaceGame!');
-		var wkey = game.input.keyboard.addKey(Phaser.Keyboard.W);
-		wkey.onDown.addOnce(this.menuDown, this);
-	}
-
-	function menuDown() {
-		this.init();
-	}
-
 	MathRacing.prototype.init = function() {
 		this.game.stage.backgroundColor = '#9bd3e1';
 	};
@@ -89,31 +83,39 @@ var MathRacing = (function() {
 
 			if (distance < 35) {
 				if (!answered) {
+					if (!this.seenObstacle) {
+						generateQuestion();
+						timer.add(5000, this.alert, this);
+						timer.start();
+						this.seenObstacle = true;
+					}
+					questionText.text = 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y;
 					questionText.visible = true;
 					displayInput.visible = true;
-					questionText.text = 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y;
 					console.log('take a break ;)');
 					SPEED = 0;
-					timer.add(5000, this.alert, this);
-					timer.start();
 				} else {
 					SPEED = 5;
 					this.arrObstacles.splice(i, 1); //remove obstacle that passed alraedy
 					answered = false;
+					this.seenObstacle = false;
 				}
-			} else {
-				timer.destroy();
 			}
 			i++;
 		}
 	};
 	MathRacing.prototype.alert = function() {
 		if (!answered) {
-			/*alertTween = game.add.sprite(100, 100, "Wrong!");
-			tween = game.add.tween(alertTween).to({
-				y: 245
-			}, 2400, Phaser.Easing.Bounce.Out, true);*/
+			this.car.tint = Math.random() * 0xffffff;
+			SPEED = 5;
+			this.arrObstacles.splice(0, 1); //remove obstacle that passed alraedy
+			answered = false;
+			this.seenObstacle = false;
+			questionText.visible = false;
+			displayInput.visible = false;
+			totalAnswer++;
 		} else {}
+		timer.destroy();
 	};
 
 	MathRacing.prototype.generateLevel = function() {
@@ -279,6 +281,10 @@ var MathRacing = (function() {
 				console.log('actual result: ' + result);
 				if (userResult == result) {
 					console.log('gratz');
+					totalAnswer++;
+					correctAnswer++;
+					score++;
+					timer.destroy();
 					generateQuestion();
 					questionText.visible = false;
 					displayInput.visible = false;
@@ -480,11 +486,66 @@ var MathRacing = (function() {
 			this.generateRoad();
 		}
 		this.moveTiles(SPEED);
+		if (totalAnswer == 3) this.finish();
+
 	};
+
+	MathRacing.prototype.finish = function() {
+		var accuracy = parseInt(correctAnswer / totalAnswer * 100);
+		if (accuracy >= 50) {
+			if (accuracy >= 75) {
+				game.global.starsArray[game.global.level - 1] = 3;
+			} else if (accuracy >= 60 && accuracy <= 75) {
+				game.global.starsArray[game.global.level - 1] = 2;
+			} else if (accuracy >= 50 && accuracy <= 60) {
+				game.global.starsArray[game.global.level - 1] = 1;
+			}
+			game.global.starsArray[game.global.level] = 0;
+		}
+		isJumping = false;
+		score = 0;
+		correctAnswer = 0;
+		totalAnswer = 0;
+		this.arrTiles = []; //create an array to hold tiles
+		this.numberOfLoop = 0; //count howmany update so far
+		this.seenObstacle = 0;
+		this.hasStarted = false;
+		this.roadCount = 0; // Number of road tiles
+		this.nextObstacleIndex = 0; // Index of where the obstacle tile should render
+		this.arrObstacles = []; // Array of all the objects that are deadly for the taxi
+
+		this.car = undefined;
+		this.carX = CAR_START_X;
+		this.jumpSpeed = JUMP_HEIGHT;
+		this.currentJumpHeight = 0;
+		game.state.start("resultState", true, false, accuracy);
+	}
+
+	MathRacing.prototype.reset = function() {
+		this.hasStarted = false;
+
+		this.jumpSpeed = JUMP_HEIGHT;
+		this.isJumping = false;
+		this.currentJumpHeight = 0;
+		this.roadCount = 0;
+
+		this.nextObstacleIndex = 0;
+		this.arrObstacles = [];
+
+		this.mouseTouchDown = false;
+		this.taxiX = CAR_START_X;
+		score = 0;
+		correctAnswer = 0;
+		totalAnswer = 0;
+	}
 
 	MathRacing.prototype.render = function() {
 		var x = parseInt(timer.duration / 1000);
 		this.game.debug.text('Time left: ' + x, 32, 32);
+		this.game.debug.text('Game level: ' + game.global.level, 32, 64);
+		this.game.debug.text('Current score: ' + score, 32, 96);
+		if (totalAnswer > 0)
+			this.game.debug.text('Accuracy: ' + parseInt(correctAnswer / totalAnswer * 100) + '%', 32, 128);
 	};
 
 	return MathRacing;

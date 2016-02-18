@@ -16,6 +16,6 @@ var menuState = {
 		this.game.input.onDown.add(this.start, this);
 	},
 	start: function() {
-		game.state.start("LevelSelect");
+		this.game.state.start("LevelSelect");
 	},
 };
