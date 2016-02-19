@@ -2,7 +2,7 @@ var MathRacing = (function() {
 
 	var JUMP_HEIGHT = 7;
 	var ANGLE = 26.55;
-	var TILE_WIDTH = 68;
+	var TILE_WIDTH = 128;
 	var SPEED = 5; //tiles speed1
 	var CAR_START_X = 30;
 	var userTextInput = 'Your answer is: _____';
@@ -11,10 +11,12 @@ var MathRacing = (function() {
 	var questionText;
 	var answered = false;
 	var isJumping = false;
+	var isJumpingAI = false;
 	var timer;
 	var score = 0;
 	var correctAnswer = 0;
 	var totalAnswer = 0;
+	var boosterAI = 0;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -30,17 +32,23 @@ var MathRacing = (function() {
 		//road start point
 		this.roadStartPosition = {
 			x: GAME_WIDTH + 100,
-			y: GAME_HEIGHT / 2 - 100
+			y: 2 * GAME_HEIGHT / 3
 		};
 
 		this.roadCount = 0; // Number of road tiles
 		this.nextObstacleIndex = 0; // Index of where the obstacle tile should render
 		this.arrObstacles = []; // Array of all the objects that are deadly for the taxi
 
+		this.speedAI = SPEED;
+
 		this.car = undefined;
+		this.carAI = undefined;
 		this.carX = CAR_START_X;
+		this.carAIx = CAR_START_X;
 		this.jumpSpeed = JUMP_HEIGHT;
+		this.jumpSpeedAI = JUMP_HEIGHT;
 		this.currentJumpHeight = 0;
+		this.currentAIJumpHeight = 0;
 	}
 
 	MathRacing.prototype.preload = function() {
@@ -71,17 +79,13 @@ var MathRacing = (function() {
 	MathRacing.prototype.checkObstacles = function() {
 		var i = 0;
 
-		while (i <= this.arrObstacles.length - 1) {
+		while (i < this.arrObstacles.length) {
 			var sprite = this.arrObstacles[i];
 
 			// Distance formula
-			var dx = sprite.x - this.car.x;
-			dx = Math.pow(dx, 2);
-			var dy = (sprite.y - sprite.height / 2) - this.car.y;
-			dy = Math.pow(dy, 2);
-			var distance = Math.sqrt(dx + dy);
+			var distance = sprite.x - this.car.x;
 
-			if (distance < 35) {
+			if (distance < 60) {
 				if (!answered) {
 					if (!this.seenObstacle) {
 						generateQuestion();
@@ -96,9 +100,33 @@ var MathRacing = (function() {
 					SPEED = 0;
 				} else {
 					SPEED = 5;
-					this.arrObstacles.splice(i, 1); //remove obstacle that passed alraedy
+					//if (this.car.x <= this.carAI.x) {
+					console.log('removing obstacle at' + i);
+					this.arrObstacles.splice(i, 1); //remove obstacle that passed alraedy when falling behind AI
 					answered = false;
 					this.seenObstacle = false;
+				}
+			}
+			i++;
+		}
+	};
+
+	MathRacing.prototype.passObstaclesAI = function() {
+		var i = 0;
+
+		while (i < this.arrObstacles.length) {
+			var sprite = this.arrObstacles[i];
+
+			// Distance formula
+			var distance = sprite.x - this.carAI.x;
+
+			if (distance < 60 && distance > 0) {
+				if (!answered && this.car.x != this.carAI.x) {
+					isJumpingAI = true;
+					if (this.car.x > this.carAI.x) {
+						console.log('removing obstacle at' + i);
+						this.arrObstacles.splice(i, 1); //remove obstacle that passed alraedy when falling behind player
+					}
 				}
 			}
 			i++;
@@ -114,6 +142,7 @@ var MathRacing = (function() {
 			questionText.visible = false;
 			displayInput.visible = false;
 			totalAnswer++;
+			boosterAI = 220;
 		} else {}
 		timer.destroy();
 	};
@@ -229,7 +258,8 @@ var MathRacing = (function() {
 				var sprite = children[j];
 				// Move the sprite
 				sprite.x -= speed * Math.cos(ANGLE * Math.PI / 180);
-				sprite.y += speed * Math.sin(ANGLE * Math.PI / 180);
+				//sprite.y += speed * Math.sin(ANGLE * Math.PI / 180);
+				sprite.y = 2 * GAME_HEIGHT / 3;
 
 				if (sprite.x < -120) {
 					// We don't need to splice anymore
@@ -243,7 +273,7 @@ var MathRacing = (function() {
 		}
 	}
 
-	MathRacing.prototype.calcPosOnRoadBy = function(xPos) {
+	MathRacing.prototype.calcPosOnRoadBy = function(xPos, AI) {
 		//Triangle //Calculate position base on Xpos
 		//                 *
 		//                **
@@ -251,16 +281,17 @@ var MathRacing = (function() {
 		//              *  *
 		//             *****
 		//              opposite
-		var adjacent = this.roadStartPosition.x - xPos;
-		var alpha = ANGLE * Math.PI / 180;
-		var hypotenuse = adjacent / Math.cos(alpha);
-		var opposite = Math.sin(alpha) * hypotenuse;
-
-		return {
-			x: xPos,
-			// -57 due to sin(angle) * hyp
-			y: this.roadStartPosition.y + opposite - 57
-		};
+		if (!AI) {
+			return {
+				x: xPos,
+				y: this.roadStartPosition.y - 30
+			};
+		} else {
+			return {
+				x: xPos,
+				y: this.roadStartPosition.y - 70
+			};
+		}
 	}
 
 	function keyPress(keyCode, result) {
@@ -288,6 +319,7 @@ var MathRacing = (function() {
 					generateQuestion();
 					questionText.visible = false;
 					displayInput.visible = false;
+					boosterAI = -110;
 					questionText.text = 'What is ' + newQuestion.x + newQuestion.op + newQuestion.y;
 					answered = true;
 					isJumping = true;
@@ -346,7 +378,11 @@ var MathRacing = (function() {
 
 		this.generateLevel();
 		this.generateRoad();
-		this.car = new Phaser.Sprite(this.game, GAME_WIDTH / 2, GAME_HEIGHT / 2, 'car');
+		this.car = new Phaser.Sprite(this.game, this.carX, GAME_HEIGHT / 2, 'car');
+		this.carAI = new Phaser.Sprite(this.game, this.carAIx, GAME_HEIGHT / 2 - 50, 'car');
+		this.carAI.tint = Math.random() * 0xffffff;
+		this.game.world.addChild(this.carAI);
+		this.carAI.anchor.setTo(0.5, 1);
 		this.game.world.addChild(this.car);
 		this.car.anchor.setTo(0.5, 1);
 
@@ -437,12 +473,21 @@ var MathRacing = (function() {
 		keyPress(8, newQuestion.result);
 	}
 
-	MathRacing.prototype.carJump = function() {
-		this.currentJumpHeight -= this.jumpSpeed;
-		this.jumpSpeed -= 0.5;
-		if (this.jumpSpeed < -JUMP_HEIGHT) {
-			this.jumpSpeed = JUMP_HEIGHT;
-			isJumping = false;
+	MathRacing.prototype.carJump = function(isAI) {
+		if (!isAI) {
+			this.currentJumpHeight -= this.jumpSpeed;
+			this.jumpSpeed -= 0.5;
+			if (this.jumpSpeed < -JUMP_HEIGHT) {
+				this.jumpSpeed = JUMP_HEIGHT;
+				isJumping = false;
+			}
+		} else {
+			this.currentAIJumpHeight -= this.jumpSpeedAI;
+			this.jumpSpeedAI -= 0.5;
+			if (this.jumpSpeedAI < -JUMP_HEIGHT) {
+				this.jumpSpeedAI = JUMP_HEIGHT;
+				isJumpingAI = false;
+			}
 		}
 	};
 
@@ -456,6 +501,14 @@ var MathRacing = (function() {
 	MathRacing.prototype.touchUp = function() {
 		this.mouseTouchDown = false;
 	};
+
+	MathRacing.prototype.moveAIcar = function(distance) {
+		this.carAI.x += distance;
+	}
+
+	MathRacing.prototype.movePlayerCar = function(distance) {
+		this.car.x += distance;
+	}
 
 	MathRacing.prototype.update = function() {
 		if (!this.hasStarted) {
@@ -474,12 +527,25 @@ var MathRacing = (function() {
 		}
 
 		if (isJumping) {
-			this.carJump();
+			this.carJump(false);
+		}
+		if (isJumpingAI) {
+			this.carJump(true);
+		}
+		if (boosterAI > 0) {
+			this.moveAIcar(1);
+			boosterAI -= 1;
+		}
+		else if (boosterAI < 0) {
+			this.moveAIcar(-1);
+			boosterAI += 1;
 		}
 		this.checkObstacles();
-		var posOnRoad = this.calcPosOnRoadBy(this.carX);
-		this.car.x = posOnRoad.x;
-		this.car.y = posOnRoad.y + this.currentJumpHeight;
+		this.passObstaclesAI();
+		var playerPosOnRoad = this.calcPosOnRoadBy(this.carX, false);
+		this.car.y = playerPosOnRoad.y + this.currentJumpHeight;
+		var aiPosOnRoad = this.calcPosOnRoadBy(this.carAIx, true);
+		this.carAI.y = aiPosOnRoad.y + this.currentAIJumpHeight;
 		this.numberOfLoop++;
 		if (this.numberOfLoop > TILE_WIDTH / SPEED) {
 			this.numberOfLoop = 0;
@@ -524,6 +590,7 @@ var MathRacing = (function() {
 	MathRacing.prototype.reset = function() {
 		this.hasStarted = false;
 
+		this.speedAI = SPEED;
 		this.jumpSpeed = JUMP_HEIGHT;
 		this.isJumping = false;
 		this.currentJumpHeight = 0;
@@ -533,7 +600,9 @@ var MathRacing = (function() {
 		this.arrObstacles = [];
 
 		this.mouseTouchDown = false;
-		this.taxiX = CAR_START_X;
+		this.carX = CAR_START_X;
+		this.carAIx = CAR_START_X;
+		boosterAI = 0;
 		score = 0;
 		correctAnswer = 0;
 		totalAnswer = 0;
