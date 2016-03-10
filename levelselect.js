@@ -31,7 +31,7 @@ levelSelect = {
 			leftArrow.alpha = 0.3;
 		}
 		// right arrow button, to turn one page right
-		rightArrow = game.add.button(430, 600, "level_arrows", this.arrowClicked, this);
+		rightArrow = game.add.button(670, 600, "level_arrows", this.arrowClicked, this);
 		rightArrow.anchor.setTo(0.5);
 		rightArrow.frame = 1;
 		// can we turn one page right?

@@ -1,6 +1,6 @@
-var GAME_WIDTH = 480;
-var GAME_HEIGHT = 640;
-var game = new Phaser.Game(480, 640, Phaser.AUTO, "");
+var GAME_WIDTH = 1024;
+var GAME_HEIGHT = 768;
+var game = new Phaser.Game(1024, 768, Phaser.AUTO, "");
 
 game.global = {
 	thumbRows : 5,
