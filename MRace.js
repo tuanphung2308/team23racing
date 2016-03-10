@@ -20,6 +20,7 @@ var MathRacing = (function() {
 	var boosterAI = 0;
 	var generatedQuestion = [];
 	var isFailedQues = false;
+	var emitter;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -189,6 +190,7 @@ var MathRacing = (function() {
 		boosterAI = 330;
 		isFailedQues = false;
 		timer.destroy();
+		emitter.start(false, 1500, 20);
 	}
 
 	MathRacing.prototype.generateLevel = function() {
@@ -520,6 +522,14 @@ var MathRacing = (function() {
 			if (questionText.visible == true)
 				keyPress(e.keyCode, newQuestion.result);
 		}
+
+		emitter = this.game.add.emitter(this.game.world.centerX, this.game.world.centerY, 400);
+
+		emitter.makeParticles(['fire_emit_1', 'fire_emit_2', 'fire_emit_3']);
+
+		//emitter.gravity = 200;
+		emitter.setAlpha(1, 0, 3000);
+		emitter.setScale(0.5, 0, 0.5, 0, 3000);
 	};
 
 	function button0down() {
@@ -648,7 +658,13 @@ var MathRacing = (function() {
 		} else if (boosterAI < 0) {
 			this.moveAIcar(-1);
 			boosterAI += 1;
+			emitter.on = false;
 		}
+		else {
+			emitter.on = false;
+		}
+		emitter.emitX = this.carAI.x - 32;
+		emitter.emitY = this.carAI.y - 35;
 		this.checkObstacles();
 		this.passObstaclesAI();
 		var playerPosOnRoad = this.calcPosOnRoadBy(this.carX, false);
