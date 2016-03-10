@@ -1,11 +1,11 @@
 var MathRacing = (function() {
 
 	var JUMP_HEIGHT = 7;
-	var ANGLE = 26.55;
+	var ANGLE = 0;
 	var TILE_WIDTH = 128;
 	var TILE_HEIGHT = 128;
-	var SPEED = 5; //tiles speed1
-	var CAR_START_X = 30;
+	var SPEED = 10; //tiles speed1
+	var CAR_START_X = 110;
 	var userTextInput = '';
 	var displayInput;
 	var newQuestion;
@@ -21,10 +21,11 @@ var MathRacing = (function() {
 	var generatedQuestion = [];
 	var isFailedQues = false;
 	var emitter;
+	var arrTiles = []; //create an array to hold tiles
+	var arrObstacles = []; // Array of all the objects that are deadly for the taxi
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
-		this.arrTiles = []; //create an array to hold tiles
 
 		this.numberOfLoop = 0; //count howmany update so far
 
@@ -35,13 +36,12 @@ var MathRacing = (function() {
 
 		//road start point
 		this.roadStartPosition = {
-			x: GAME_WIDTH + 100,
+			x: GAME_WIDTH + 124,
 			y: 2 * GAME_HEIGHT / 3
 		};
 
 		this.roadCount = 0; // Number of road tiles
 		this.nextObstacleIndex = 0; // Index of where the obstacle tile should render
-		this.arrObstacles = []; // Array of all the objects that are deadly for the taxi
 
 		this.speedAI = SPEED;
 
@@ -63,7 +63,8 @@ var MathRacing = (function() {
 		this.game.load.image('tile_road_1', 'static/img/assets/tile_road_1.png'); //TILE ROAD
 		this.game.load.image('background', 'desert-view.png'); //Background
 		this.game.load.image('car', 'static/img/assets/taxi.png'); //DA CAR
-		this.game.load.image('obstacle_1', 'static/img/assets/obstacle_1.png'); //obstacles
+		this.game.load.image('obstacle_2', 'static/img/assets/obstacle_2.png'); //hole
+		this.load.atlasJSONHash('obstacle_1', 'static/img/assets/obstacle_1.png', 'static/img/assets/obstacle_1.json'); //trafic light
 		this.game.load.image('button_0', 'static/img/assets/number0.png');
 		this.game.load.image('button_1', 'static/img/assets/number1.png');
 		this.game.load.image('button_2', 'static/img/assets/number2.png');
@@ -111,17 +112,17 @@ var MathRacing = (function() {
 	MathRacing.prototype.checkObstacles = function() {
 		var i = 0;
 
-		while (i < this.arrObstacles.length) {
-			var sprite = this.arrObstacles[i];
+		while (i < arrObstacles.length) {
+			var sprite = arrObstacles[i];
 
 			// Distance formula
 			var distance = sprite.x - this.car.x;
 
-			if (distance < 60) {
+			if (distance < 70) {
 				if (!answered) {
 					if (!this.seenObstacle) {
 						generateQuestion();
-						timer.add(5000, this.alert, this);
+						timer.add(2000, this.alert, this);
 						timer.start();
 						this.seenObstacle = true;
 					}
@@ -131,10 +132,15 @@ var MathRacing = (function() {
 					console.log('take a break ;)');
 					SPEED = 0;
 				} else {
-					SPEED = 5;
+					if (sprite.key == 'obstacle_1') {
+						sprite.animations.play('turnGreen')
+					} else if (sprite.key == 'obstacle_2') {
+						isJumping = true;
+					}
+					SPEED = 6;
 					//if (this.car.x <= this.carAI.x) {
-					console.log('removing obstacle at' + i);
-					this.arrObstacles.splice(i, 1); //remove obstacle that passed alraedy when falling behind AI
+					//console.log('removing obstacle at' + i);
+					arrObstacles.splice(i, 1); //remove obstacle that passed alraedy when falling behind AI
 					answered = false;
 					this.seenObstacle = false;
 				}
@@ -146,18 +152,18 @@ var MathRacing = (function() {
 	MathRacing.prototype.passObstaclesAI = function() {
 		var i = 0;
 
-		while (i < this.arrObstacles.length) {
-			var sprite = this.arrObstacles[i];
+		while (i < arrObstacles.length) {
+			var sprite = arrObstacles[i];
 
 			// Distance formula
 			var distance = sprite.x - this.carAI.x;
 
-			if (distance < 60 && distance > 0) {
+			if (distance < 70 && distance > 0) {
 				if (!answered && this.car.x != this.carAI.x) {
-					isJumpingAI = true;
+					if (sprite.key == 'obstacle_2') isJumpingAI = true;
 					if (this.car.x > this.carAI.x) {
-						console.log('removing obstacle at' + i);
-						this.arrObstacles.splice(i, 1); //remove obstacle that passed alraedy when falling behind player
+						//console.log('removing obstacle at' + i);
+						arrObstacles.splice(i, 1); //remove obstacle that passed alraedy when falling behind player
 					}
 				}
 			}
@@ -180,14 +186,14 @@ var MathRacing = (function() {
 		}, 1000, Phaser.Easing.Linear.None);
 		tween_rotate.start();
 		//this.car.tint = Math.random() * 0xffffff;
-		SPEED = 5;
-		this.arrObstacles.splice(0, 1); //remove obstacle that passed alraedy
+		SPEED = 6;
+		arrObstacles.splice(0, 1); //remove obstacle that passed alraedy
 		answered = false;
 		this.seenObstacle = false;
 		questionText.visible = false;
 		displayInput.visible = false;
 		totalAnswer++;
-		boosterAI = 330;
+		boosterAI = 220;
 		isFailedQues = false;
 		timer.destroy();
 		emitter.start(false, 1500, 20);
@@ -196,8 +202,8 @@ var MathRacing = (function() {
 	MathRacing.prototype.generateLevel = function() {
 		var i = 0;
 		// Calculate how many tiles fit on screen and add 2 just to be safe
-		var numberOfTiles = Math.ceil(GAME_WIDTH / TILE_WIDTH) + 2;
-		while (i <= numberOfTiles) {
+		var numberOfTiles = (GAME_WIDTH / TILE_WIDTH) + 3;
+		while (i <= numberOfTiles && SPEED > 0) {
 			this.generateRoad();
 			if (i != numberOfTiles) {
 				// Move the tiles by TILE_WIDTH
@@ -214,7 +220,8 @@ var MathRacing = (function() {
 
 		if (this.roadCount > this.nextObstacleIndex && this.hasStarted) {
 			this.calculateNextObstacleIndex();
-			tile = 'obstacle_1';
+			tile = this.randomObstacle();
+			//tile = this.randomObstacle();
 			isObstacle = true;
 		}
 
@@ -224,12 +231,16 @@ var MathRacing = (function() {
 		this.createTileAtIndex(this.randomCrowd(), 3);
 		this.createTileAtIndex(this.randomRiver(), 6);
 		var sprite = this.createTileAtIndex(tile, 4);
-		this.createTileAtIndex('empty', 5);
 		if (isObstacle) {
-			this.arrObstacles.push(sprite);
+			arrObstacles.push(sprite);
 		}
 		//push sprite to the array arrTiles
-		this.arrTiles.push(sprite);
+		//arrTiles.push(sprite);
+	};
+
+	MathRacing.prototype.randomObstacle = function() {
+		var random = Math.round(Math.random() * 1) + 1;
+		return 'obstacle_' + random;
 	};
 
 	MathRacing.prototype.randomBuilding = function() {
@@ -270,12 +281,26 @@ var MathRacing = (function() {
 		// < 0 if it's a layer below the middle
 		// > 0 it's a layer above the middle
 		var offset = index - middle;
-
-		var x = this.roadStartPosition.x;
+		var x;
 		var y = this.roadStartPosition.y + offset * TILE_HEIGHT;
-		var sprite = new Phaser.Sprite(this.game, x, y, tile);
+		var sprite;
+
+		if (arrTiles[4].children[0] === undefined) {
+			x = this.roadStartPosition.x ;
+		} else {
+			x = arrTiles[4].children[0].x + 128;
+		}
+
+		if (tile == 'obstacle_2') {
+			sprite = new Phaser.Sprite(this.game, x, y, tile);
+		} else if (tile == 'obstacle_1') {
+			sprite = new Phaser.Sprite(this.game, x, y, tile, 'obstacle1_1');
+			sprite.animations.add('turnGreen', Phaser.Animation.generateFrameNames('obstacle1_', 1, 3, '', 1), 4, true, false);
+		} else {
+			sprite = new Phaser.Sprite(this.game, x, y, tile);
+		}
 		sprite.anchor.setTo(0.5, 1.0);
-		this.arrTiles[index].addChildAt(sprite, 0);
+		arrTiles[index].addChildAt(sprite, 0);
 
 		return sprite;
 	};
@@ -321,21 +346,22 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.moveTiles = function(speed) {
-		var i = this.arrTiles.length - 1;
+		var i = arrTiles.length - 1;
 		// Reverse loop over all the tiles
 		while (i >= 0) {
-			var children = this.arrTiles[i].children;
+			var children = arrTiles[i].children;
 			var j = children.length - 1;
 			while (j >= 0) {
 				var sprite = children[j];
 				// Move the sprite
-				sprite.x -= speed * Math.cos(ANGLE * Math.PI / 180);
+				//sprite.x -= speed;
+				sprite.x -= speed;
 				//sprite.y += speed * Math.sin(ANGLE * Math.PI / 180);
 
-				if (sprite.x < -120) {
+				if (sprite.x < -100) {
 					// We don't need to splice anymore
-					// this.arrTiles[i].splice(i, 1);
-					this.arrTiles[i].removeChild(sprite);
+					// arrTiles[i].splice(i, 1);
+					arrTiles[i].removeChild(sprite);
 					sprite.destroy();
 				}
 				j--;
@@ -387,7 +413,6 @@ var MathRacing = (function() {
 						boosterAI = -110;
 						questionText.text = newQuestion.x + newQuestion.op + newQuestion.y;
 						answered = true;
-						isJumping = true;
 					} else {
 						console.log('wrong bro');
 						isFailedQues = true;
@@ -418,7 +443,7 @@ var MathRacing = (function() {
 		for (var i = 0; i < numberOfLayers; i++) {
 			var layer = new Phaser.Sprite(this.game, 0, 0);
 			this.game.world.addChild(layer);
-			this.arrTiles.push(layer);
+			arrTiles.push(layer);
 		}
 
 		var buttonStartX = (GAME_WIDTH - 378) / 2;
@@ -478,7 +503,6 @@ var MathRacing = (function() {
 		timer = this.game.time.create(false);
 
 		this.generateLevel();
-		this.generateRoad();
 		this.car = new Phaser.Sprite(this.game, this.carX, GAME_HEIGHT / 2, 'car');
 		this.carAI = new Phaser.Sprite(this.game, this.carAIx, GAME_HEIGHT / 2 - 50, 'car');
 		this.carAI.tint = 0x00ffff;
@@ -659,8 +683,7 @@ var MathRacing = (function() {
 			this.moveAIcar(-1);
 			boosterAI += 1;
 			emitter.on = false;
-		}
-		else {
+		} else {
 			emitter.on = false;
 		}
 		emitter.emitX = this.carAI.x - 32;
@@ -673,11 +696,14 @@ var MathRacing = (function() {
 		this.carAI.y = aiPosOnRoad.y + this.currentAIJumpHeight;
 		this.numberOfLoop++;
 
-		if (this.numberOfLoop > TILE_WIDTH / SPEED) {
-			this.numberOfLoop = 0;
-			this.generateRoad();
+		if (SPEED > 0) {
+
+			if (this.numberOfLoop > TILE_WIDTH / SPEED) {
+				this.numberOfLoop = 0;
+				this.generateRoad();
+			}
+			this.moveTiles(SPEED);
 		}
-		this.moveTiles(SPEED);
 
 		if (this.roadCount > this.nextQueueIndex) {
 			this.generateRightQueue();
@@ -742,13 +768,13 @@ var MathRacing = (function() {
 		score = 0;
 		correctAnswer = 0;
 		totalAnswer = 0;
-		this.arrTiles = []; //create an array to hold tiles
+		arrTiles = []; //create an array to hold tiles
 		this.numberOfLoop = 0; //count howmany update so far
 		this.seenObstacle = 0;
 		this.hasStarted = false;
 		this.roadCount = 0; // Number of road tiles
 		this.nextObstacleIndex = 0; // Index of where the obstacle tile should render
-		this.arrObstacles = []; // Array of all the objects that are deadly for the taxi
+		arrObstacles = []; // Array of all the objects that are deadly for the taxi
 		boosterAI = 0;
 
 		this.car = undefined;
@@ -757,7 +783,7 @@ var MathRacing = (function() {
 		this.currentJumpHeight = 0;
 		generatedQuestion = [];
 		timer.destroy();
-		console.log(passingPara);
+		//console.log(passingPara);
 		game.state.start("resultState", true, false, passingPara);
 	};
 
@@ -771,7 +797,7 @@ var MathRacing = (function() {
 		this.roadCount = 0;
 
 		this.nextObstacleIndex = 0;
-		this.arrObstacles = [];
+		arrObstacles = [];
 
 		this.mouseTouchDown = false;
 		this.carX = CAR_START_X;
@@ -780,6 +806,8 @@ var MathRacing = (function() {
 		score = 0;
 		correctAnswer = 0;
 		totalAnswer = 0;
+		this.nextQueueIndex = 0;
+		this.rightQueue = [];
 		timer.destroy();
 	};
 
