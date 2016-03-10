@@ -527,7 +527,7 @@ var MathRacing = (function() {
 
 		emitter.makeParticles(['fire_emit_1', 'fire_emit_2', 'fire_emit_3']);
 
-		//emitter.gravity = 200;
+		emitter.gravity = 200;
 		emitter.setAlpha(1, 0, 3000);
 		emitter.setScale(0.5, 0, 0.5, 0, 3000);
 	};
