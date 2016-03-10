@@ -170,7 +170,15 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.failQuestion = function() {
-		this.car.tint = Math.random() * 0xffffff;
+		this.game.add.tween(this.car).to({
+			tint: 0xff0000,
+		}, 600, Phaser.Easing.Exponential.Out, true, 0, 0, true);
+		var tween_rotate = this.game.add.tween(this.car);
+		tween_rotate.to({
+			angle: 360
+		}, 1000, Phaser.Easing.Linear.None);
+		tween_rotate.start();
+		//this.car.tint = Math.random() * 0xffffff;
 		SPEED = 5;
 		this.arrObstacles.splice(0, 1); //remove obstacle that passed alraedy
 		answered = false;
@@ -178,7 +186,7 @@ var MathRacing = (function() {
 		questionText.visible = false;
 		displayInput.visible = false;
 		totalAnswer++;
-		boosterAI = 220;
+		boosterAI = 330;
 		isFailedQues = false;
 		timer.destroy();
 	}
@@ -471,7 +479,7 @@ var MathRacing = (function() {
 		this.generateRoad();
 		this.car = new Phaser.Sprite(this.game, this.carX, GAME_HEIGHT / 2, 'car');
 		this.carAI = new Phaser.Sprite(this.game, this.carAIx, GAME_HEIGHT / 2 - 50, 'car');
-		this.carAI.tint = Math.random() * 0xffffff;
+		this.carAI.tint = 0x00ffff;
 		this.game.world.addChild(this.carAI);
 		this.carAI.anchor.setTo(0.5, 1);
 		this.game.world.addChild(this.car);
