@@ -23,7 +23,7 @@ levelSelect = {
 			currentPage = pages - 1;
 		}
 		// left arrow button, to turn one page left
-		leftArrow = game.add.button(50, 600, "level_arrows", this.arrowClicked, this);
+		leftArrow = game.add.button(50, GAME_HEIGHT - 50, "level_arrows", this.arrowClicked, this);
 		leftArrow.anchor.setTo(0.5);
 		leftArrow.frame = 0;
 		// can we turn one page left?
@@ -31,7 +31,7 @@ levelSelect = {
 			leftArrow.alpha = 0.3;
 		}
 		// right arrow button, to turn one page right
-		rightArrow = game.add.button(670, 600, "level_arrows", this.arrowClicked, this);
+		rightArrow = game.add.button(GAME_WIDTH - 50, GAME_HEIGHT - 50, "level_arrows", this.arrowClicked, this);
 		rightArrow.anchor.setTo(0.5);
 		rightArrow.frame = 1;
 		// can we turn one page right?
