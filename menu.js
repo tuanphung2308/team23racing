@@ -3,14 +3,16 @@ var menuState = {
 		this.game.stage.backgroundColor = '#9bd3e1';
 	},
 	create: function() {
-		var menuLabel = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 5, 'Race Game!', {
+		this.game.add.tileSprite(0, 0, 1024, 768, 'menu-background');
+
+		var menuLabel = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 3, 'Race Game!', {
 			font: "70px Arial",
-			fill: "#ff0044",
+			fill: "#ffffff",
 			align: "center"
 		});
-		var desLabel = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 3, 'Press space to start!', {
+		var desLabel = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 3 + 100, 'Press space to start!', {
 			font: "20px Arial",
-			fill: "#ff0044",
+			fill: "#ffffff",
 			align: "center"
 		});
 

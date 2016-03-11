@@ -4,7 +4,7 @@ var MathRacing = (function() {
 	var ANGLE = 0;
 	var TILE_WIDTH = 128;
 	var TILE_HEIGHT = 128;
-	var SPEED = 5; //tiles speed1
+	var SPEED = 5; //tiles speed
 	var CAR_START_X = 256;
 	var userTextInput = '';
 	var displayInput;
@@ -23,6 +23,8 @@ var MathRacing = (function() {
 	var emitter;
 	var arrTiles = []; //create an array to hold tiles
 	var arrObstacles = []; // Array of all the objects that are deadly for the taxi
+	var currentObstacle = 0;
+	var remainingPause = 1;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -111,7 +113,7 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.checkObstacles = function() {
-		var i = 0;
+		var i = currentObstacle;
 
 		while (i < arrObstacles.length) {
 			var sprite = arrObstacles[i];
@@ -147,7 +149,11 @@ var MathRacing = (function() {
 					SPEED = 6;
 					//if (this.car.x <= this.carAI.x) {
 					//console.log('removing obstacle at' + i);
-					arrObstacles.splice(i, 1); //remove obstacle that passed alraedy when falling behind AI
+					if (this.car.x > this.carAI.x) {
+						currentObstacle++;
+					} else {
+						arrObstacles.splice(i, 1); //remove obstacle that passed alraedy when falling behind AI				
+					}
 					answered = false;
 					this.seenObstacle = false;
 				}
@@ -177,6 +183,7 @@ var MathRacing = (function() {
 					if (this.car.x > this.carAI.x) {
 						//console.log('removing obstacle at' + i);
 						arrObstacles.splice(i, 1); //remove obstacle that passed alraedy when falling behind player
+						currentObstacle = currentObstacle - 1;
 					}
 				}
 			}
@@ -201,7 +208,11 @@ var MathRacing = (function() {
 		tween_rotate.start();
 		//this.car.tint = Math.random() * 0xffffff;
 		SPEED = 6;
-		arrObstacles.splice(0, 1); //remove obstacle that passed alraedy
+		if (this.car.x > this.carAI.x) {
+			currentObstacle++;
+		} else {
+			arrObstacles.splice(currentObstacle, 1); //remove obstacle that passed alraedy when falling behind AI				
+		}
 		answered = false;
 		this.seenObstacle = false;
 		questionText.visible = false;
@@ -427,6 +438,7 @@ var MathRacing = (function() {
 						boosterAI = -110;
 						questionText.text = newQuestion.x + newQuestion.op + newQuestion.y;
 						displayInput.text = '';
+						emitter.start(false, 1500, 20);
 						answered = true;
 					} else {
 						console.log('wrong bro');
@@ -459,7 +471,7 @@ var MathRacing = (function() {
 			x: 1,
 			y: 1
 		}, 400, Phaser.Easing.Linear.None, false, 200, 0, false);
-		a.chain(b);
+		a.chain(b); -
 		a.start();
 	}
 
@@ -512,7 +524,24 @@ var MathRacing = (function() {
 		this.game.add.button(GAME_WIDTH - 60, 0, 'button_pause', pauseGame, this, 2, 1, 0);
 
 		function pauseGame() {
-			this.game.paused = true;
+			if (remainingPause == 1) {
+				this.game.paused = true;
+				remainingPause = 0;
+				if (this.hasStarted == true && SPEED == 0) {
+					timer.destroy();
+					generateQuestion();
+					displayInput.text = '';
+					userTextInput = '';
+					timer.add(5000, this.alert, this);
+					timer.start();
+					questionText.text = newQuestion.x + newQuestion.op + newQuestion.y;
+					console.log(questionText.text);
+					questionText.visible = false;
+					displayInput.visible = false;
+				}
+			} else {
+				console.log('out of pause attempt');
+			}
 		};
 
 		this.game.input.onDown.add(unpause, self);
@@ -526,6 +555,8 @@ var MathRacing = (function() {
 					this.game.paused = false;
 				}
 			}
+			questionText.visible = true;
+			displayInput.visible = true;
 		};
 
 		timer = this.game.time.create(false);
@@ -705,17 +736,18 @@ var MathRacing = (function() {
 			this.carJump(true);
 		}
 		if (boosterAI > 0) {
+			emitter.emitX = this.carAI.x - 32;
+			emitter.emitY = this.carAI.y - 35;
 			this.moveAIcar(1);
 			boosterAI -= 1;
 		} else if (boosterAI < 0) {
+			emitter.emitX = this.car.x - 32;
+			emitter.emitY = this.car.y - 35;
 			this.moveAIcar(-1);
 			boosterAI += 1;
-			emitter.on = false;
 		} else {
 			emitter.on = false;
 		}
-		emitter.emitX = this.carAI.x - 32;
-		emitter.emitY = this.carAI.y - 35;
 		this.checkObstacles();
 		this.passObstaclesAI();
 		var playerPosOnRoad = this.calcPosOnRoadBy(this.carX, false);
@@ -737,7 +769,7 @@ var MathRacing = (function() {
 			this.generateRightQueue();
 		}
 
-		if (totalAnswer == 10) this.finish();
+		if (totalAnswer == 20) this.finish();
 
 	};
 
@@ -836,6 +868,8 @@ var MathRacing = (function() {
 		totalAnswer = 0;
 		this.nextQueueIndex = 0;
 		this.rightQueue = [];
+		currentObstacle = 0;
+		remainingPause = 1;
 		timer.destroy();
 	};
 
