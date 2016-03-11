@@ -4,8 +4,8 @@ var MathRacing = (function() {
 	var ANGLE = 0;
 	var TILE_WIDTH = 128;
 	var TILE_HEIGHT = 128;
-	var SPEED = 10; //tiles speed1
-	var CAR_START_X = 110;
+	var SPEED = 5; //tiles speed1
+	var CAR_START_X = 256;
 	var userTextInput = '';
 	var displayInput;
 	var newQuestion;
@@ -65,6 +65,7 @@ var MathRacing = (function() {
 		this.game.load.image('car', 'static/img/assets/taxi.png'); //DA CAR
 		this.game.load.image('obstacle_2', 'static/img/assets/obstacle_2.png'); //hole
 		this.load.atlasJSONHash('obstacle_1', 'static/img/assets/obstacle_1.png', 'static/img/assets/obstacle_1.json'); //trafic light
+		this.load.atlasJSONHash('obstacle_3', 'static/img/assets/obstacle_3.png', 'static/img/assets/obstacle_3.json'); //trafic light
 		this.game.load.image('button_0', 'static/img/assets/number0.png');
 		this.game.load.image('button_1', 'static/img/assets/number1.png');
 		this.game.load.image('button_2', 'static/img/assets/number2.png');
@@ -118,10 +119,12 @@ var MathRacing = (function() {
 			// Distance formula
 			var distance = sprite.x - this.car.x;
 
-			if (distance < 70) {
+			if (distance < 100) {
 				if (!answered) {
 					if (!this.seenObstacle) {
 						generateQuestion();
+						displayInput.text = '';
+						userTextInput = '';
 						timer.add(2000, this.alert, this);
 						timer.start();
 						this.seenObstacle = true;
@@ -133,9 +136,13 @@ var MathRacing = (function() {
 					SPEED = 0;
 				} else {
 					if (sprite.key == 'obstacle_1') {
-						sprite.animations.play('turnGreen')
+						sprite.animations.play('turnGreen');
 					} else if (sprite.key == 'obstacle_2') {
 						isJumping = true;
+					} else if (sprite.key == 'obstacle_3') {
+						sprite.animations.play('rockBreak');
+						this.growCar();
+						//tween_rotate.start();
 					}
 					SPEED = 6;
 					//if (this.car.x <= this.carAI.x) {
@@ -158,9 +165,15 @@ var MathRacing = (function() {
 			// Distance formula
 			var distance = sprite.x - this.carAI.x;
 
-			if (distance < 70 && distance > 0) {
-				if (!answered && this.car.x != this.carAI.x) {
-					if (sprite.key == 'obstacle_2') isJumpingAI = true;
+			if (distance < 100 && distance > 0) {
+				if (!answered && this.car.x != this.carAI.x && SPEED > 0) {
+					if (sprite.key == 'obstacle_2') {
+						isJumpingAI = true;
+					} else if (sprite.key == 'obstacle_3') {
+						this.game.add.tween(this.carAI).to({
+							tint: 0xe2e2e2,
+						}, 600, Phaser.Easing.Exponential.Out, true, 0, 0, true);
+					}
 					if (this.car.x > this.carAI.x) {
 						//console.log('removing obstacle at' + i);
 						arrObstacles.splice(i, 1); //remove obstacle that passed alraedy when falling behind player
@@ -170,6 +183,7 @@ var MathRacing = (function() {
 			i++;
 		}
 	};
+
 	MathRacing.prototype.alert = function() {
 		if (!answered) {
 			isFailedQues = true;
@@ -239,7 +253,7 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.randomObstacle = function() {
-		var random = Math.round(Math.random() * 1) + 1;
+		var random = Math.round(Math.random() * 2) + 1;
 		return 'obstacle_' + random;
 	};
 
@@ -286,7 +300,7 @@ var MathRacing = (function() {
 		var sprite;
 
 		if (arrTiles[4].children[0] === undefined) {
-			x = this.roadStartPosition.x ;
+			x = this.roadStartPosition.x;
 		} else {
 			x = arrTiles[4].children[0].x + 128;
 		}
@@ -295,7 +309,10 @@ var MathRacing = (function() {
 			sprite = new Phaser.Sprite(this.game, x, y, tile);
 		} else if (tile == 'obstacle_1') {
 			sprite = new Phaser.Sprite(this.game, x, y, tile, 'obstacle1_1');
-			sprite.animations.add('turnGreen', Phaser.Animation.generateFrameNames('obstacle1_', 1, 3, '', 1), 4, true, false);
+			sprite.animations.add('turnGreen', Phaser.Animation.generateFrameNames('obstacle1_', 1, 3, '', 1), 10, false, false);
+		} else if (tile == 'obstacle_3') {
+			sprite = new Phaser.Sprite(this.game, x, y, tile, 'obstacle3_1');
+			sprite.animations.add('rockBreak', Phaser.Animation.generateFrameNames('obstacle3_', 1, 2, '', 1), 10, false, false);
 		} else {
 			sprite = new Phaser.Sprite(this.game, x, y, tile);
 		}
@@ -388,7 +405,6 @@ var MathRacing = (function() {
 		//if (char >= 0 && char < 10) {
 		//keyCode from 47 to 59 is 0 -> 9
 		if (!this.game.paused) {
-			var userResult;
 			if (displayInput.visible == true) {
 				if (keyCode > 47 && keyCode < 58) {
 					if (userTextInput == '') {
@@ -398,20 +414,19 @@ var MathRacing = (function() {
 					}
 					displayInput.text = userTextInput;
 				} else if (keyCode == 13) {
-					userResult = userTextInput; //replace all non-digit with ''
-					console.log('user result: ' + userResult);
+					console.log('user result: ' + userTextInput);
 					console.log('actual result: ' + result);
-					if (userResult == result) {
+					if (userTextInput == result && userTextInput != '') {
 						console.log('gratz');
 						totalAnswer++;
 						correctAnswer++;
 						score++;
 						timer.destroy();
-						//generateQuestion();
 						questionText.visible = false;
 						displayInput.visible = false;
 						boosterAI = -110;
 						questionText.text = newQuestion.x + newQuestion.op + newQuestion.y;
+						displayInput.text = '';
 						answered = true;
 					} else {
 						console.log('wrong bro');
@@ -434,6 +449,19 @@ var MathRacing = (function() {
 			}
 		}
 	};
+
+	MathRacing.prototype.growCar = function() {
+		var a = this.game.add.tween(this.car.scale).to({
+			x: 2,
+			y: 2
+		}, 400, Phaser.Easing.Linear.None, false, 0, 0, false);
+		var b = this.game.add.tween(this.car.scale).to({
+			x: 1,
+			y: 1
+		}, 400, Phaser.Easing.Linear.None, false, 200, 0, false);
+		a.chain(b);
+		a.start();
+	}
 
 	MathRacing.prototype.create = function() {
 		this.game.add.tileSprite(0, 0, 1024, 288, 'background');
