@@ -1,7 +1,7 @@
 var MathRacing = (function() {
 
 	var JUMP_HEIGHT = 7;
-	var TILE_WIDTH = 128;
+	var TILE_WIDTH = 127;
 	var TILE_HEIGHT = 128;
 	var SPEED = 5; //tiles speed
 	var CAR_START_X = 256;
@@ -27,6 +27,7 @@ var MathRacing = (function() {
 	var currentSpeed = 5;
 	var currentTimer = 5000;
 	var currentStreak = 0;
+	var delayTimer;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -62,12 +63,12 @@ var MathRacing = (function() {
 
 	MathRacing.prototype.preload = function() {
 		// This.game.load = instance of Phaser.Loader
-		this.game.load.image('tile_road_1', 'static/img/assets/tile_road_1.png'); //TILE ROAD
+		this.game.load.image('tile_road_1', 'static/img/assets/tile_road_1_city.png'); //TILE ROAD
 		this.game.load.image('background', 'desert-view.png'); //Background
 		this.game.load.image('car', 'static/img/assets/taxi.png'); //DA CAR
-		this.game.load.image('obstacle_2', 'static/img/assets/obstacle_2.png'); //hole
-		this.load.atlasJSONHash('obstacle_1', 'static/img/assets/obstacle_1.png', 'static/img/assets/obstacle_1.json'); //trafic light
-		this.load.atlasJSONHash('obstacle_3', 'static/img/assets/obstacle_3.png', 'static/img/assets/obstacle_3.json'); //trafic light
+		this.game.load.image('obstacle_2', 'static/img/assets/obstacle_2_city.png'); //hole
+		this.load.atlasJSONHash('obstacle_1', 'static/img/assets/obstacle_1_city.png', 'static/img/assets/obstacle_1_city.json'); //trafic light
+		this.load.atlasJSONHash('obstacle_3', 'static/img/assets/obstacle_3_city.png', 'static/img/assets/obstacle_3_city.json'); //trafic light
 		this.game.load.image('button_0', 'static/img/assets/number0.png');
 		this.game.load.image('button_1', 'static/img/assets/number1.png');
 		this.game.load.image('button_2', 'static/img/assets/number2.png');
@@ -84,22 +85,22 @@ var MathRacing = (function() {
 		this.game.load.image('question_field', 'static/img/assets/question_field.png');
 		this.game.load.image('answer_field', 'static/img/assets/answer_field.png');
 		this.game.load.image('button_pause', 'pause.png');
-		this.game.load.image('empty', 'empty.png');
-		this.game.load.image('sidelane_1', 'sidelane_1.png');
-		this.game.load.image('sidelane_2', 'sidelane_2.png');
-		this.game.load.image('sidelane_3', 'sidelane_3.png');
-		this.game.load.image('sidelane_4', 'sidelane_4.png');
-		this.game.load.image('sidelane_5', 'sidelane_5.png');
-		this.game.load.image('side_end', 'side_end.png');
-		this.game.load.image('side_middle_empty', 'side_middle_empty.png');
-		this.game.load.image('side_middle_camel', 'side_middle_camel.png');
-		this.game.load.image('side_start', 'side_start.png');
-		this.game.load.image('building_1', 'buildingTiles_1.png');
-		this.game.load.image('building_2', 'buildingTiles_2.png');
-		this.game.load.image('building_3', 'buildingTiles_3.png');
-		this.game.load.image('building_4', 'buildingTiles_4.png');
-		this.game.load.image('building_5', 'buildingTiles_5.png');
-		this.game.load.image('building_6', 'buildingTiles_6.png');
+		this.game.load.image('empty', 'empty_city.png');
+		this.game.load.image('sidelane_1', 'sidelane_1_city.png');
+		this.game.load.image('sidelane_2', 'sidelane_2_city.png');
+		this.game.load.image('sidelane_3', 'sidelane_3_city.png');
+		this.game.load.image('sidelane_4', 'sidelane_4_city.png');
+		this.game.load.image('sidelane_5', 'sidelane_5_city.png');
+		this.game.load.image('side_end', 'side_end_city.png');
+		this.game.load.image('side_middle_empty', 'side_middle_empty_city.png');
+		this.game.load.image('side_middle_camel', 'side_middle_camel_city.png');
+		this.game.load.image('side_start', 'side_start_city.png');
+		this.game.load.image('building_1', 'buildingTiles_1_city.png');
+		this.game.load.image('building_2', 'buildingTiles_2_city.png');
+		this.game.load.image('building_3', 'buildingTiles_3_city.png');
+		this.game.load.image('building_4', 'buildingTiles_4_city.png');
+		this.game.load.image('building_5', 'buildingTiles_5_city.png');
+		this.game.load.image('building_6', 'buildingTiles_6_city.png');
 		this.game.load.image('river_1', 'river_1.png');
 		this.game.load.image('river_2', 'river_2.png');
 		this.game.load.image('river_3', 'river_3.png');
@@ -200,14 +201,6 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.failQuestion = function() {
-		this.game.add.tween(this.car).to({
-			tint: 0xff0000,
-		}, 600, Phaser.Easing.Exponential.Out, true, 0, 0, true);
-		var tween_rotate = this.game.add.tween(this.car);
-		tween_rotate.to({
-			angle: 360
-		}, 1000, Phaser.Easing.Linear.None);
-		tween_rotate.start();
 		//this.car.tint = Math.random() * 0xffffff;
 		currentSpeed -= 0.1 * currentStreak;
 		currentStreak = 0;
@@ -215,7 +208,7 @@ var MathRacing = (function() {
 		if (this.car.x > this.carAI.x) {
 			currentObstacle++;
 		} else {
-			//console.log(arrObstacles[currentObstacle].key);
+			console.log(arrObstacles);
 			if (arrObstacles[currentObstacle].key == 'obstacle_2') {
 				isJumpingAI = true;
 			} else if (arrObstacles[currentObstacle].key == 'obstacle_3') {
@@ -230,7 +223,7 @@ var MathRacing = (function() {
 		questionText.visible = false;
 		displayInput.visible = false;
 		totalAnswer++;
-		boosterAI = 220;
+		boosterAI = 222;
 		isFailedQues = false;
 		timer.destroy();
 		emitter.start(false, 1500, 20);
@@ -439,7 +432,7 @@ var MathRacing = (function() {
 		} else {
 			return {
 				x: xPos,
-				y: this.roadStartPosition.y - 70
+				y: this.roadStartPosition.y - 80
 			};
 		}
 	};
@@ -481,7 +474,7 @@ var MathRacing = (function() {
 						if (timer > 4000) timer = timer - currentStreak * 100;
 						score++;
 						timer.destroy();
-						boosterAI = -110;
+						boosterAI = -111;
 						questionText.text = newQuestion.x + newQuestion.op + newQuestion.y;
 						displayInput.text = '';
 						emitter.start(false, 1500, 20);
@@ -786,7 +779,24 @@ var MathRacing = (function() {
 			displayInput.visible = false;
 		}
 		*/
-		if (isFailedQues) this.failQuestion();
+		if (this.game.time.now - delayTimer < 1000) {
+			SPEED = 0;
+		} else {
+			SPEED = currentSpeed;
+		}
+		if (isFailedQues) {
+			/*this.game.add.tween(this.car).to({
+				angle: 180
+			}, 200, Phaser.Easing.Linear.Nonem, true, 0, 0, false);*/
+			this.game.add.tween(this.car).to({
+				alpha: 10
+			}, 200, Phaser.Easing.Linear.None, true, 0, 3, true);
+			/*this.game.add.tween(this.car).to({
+				angle: 0
+			}, 0, Phaser.Easing.Linear.Nonem, true, 0, 0, true);*/
+			delayTimer = this.game.time.now;
+			this.failQuestion();
+		}
 		if (!this.hasStarted) {
 			startDisplay.visible = true;
 		} else {
@@ -811,13 +821,13 @@ var MathRacing = (function() {
 		if (boosterAI > 0) {
 			emitter.emitX = this.carAI.x - 32;
 			emitter.emitY = this.carAI.y - 35;
-			this.moveAIcar(1);
-			boosterAI -= 1;
+			this.moveAIcar(3);
+			boosterAI -= 3;
 		} else if (boosterAI < 0) {
 			emitter.emitX = this.car.x - 32;
 			emitter.emitY = this.car.y - 35;
-			this.moveAIcar(-1);
-			boosterAI += 1;
+			this.moveAIcar(-3);
+			boosterAI += 3;
 		} else {
 			emitter.on = false;
 		}
