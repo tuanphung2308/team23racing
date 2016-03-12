@@ -15,6 +15,9 @@ var menuState = {
 			fill: "#ffffff",
 			align: "center"
 		});
+		this.game.add.tween(desLabel).to({
+			alpha: 0
+		}, 250, Phaser.Easing.Linear.None, true, 0,0, true).loop(true);
 
 		menuLabel.anchor.set(0.5);
 		desLabel.anchor.set(0.5);

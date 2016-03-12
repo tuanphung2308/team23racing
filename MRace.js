@@ -1,7 +1,6 @@
 var MathRacing = (function() {
 
 	var JUMP_HEIGHT = 7;
-	var ANGLE = 0;
 	var TILE_WIDTH = 128;
 	var TILE_HEIGHT = 128;
 	var SPEED = 5; //tiles speed
@@ -25,6 +24,9 @@ var MathRacing = (function() {
 	var arrObstacles = []; // Array of all the objects that are deadly for the taxi
 	var currentObstacle = 0;
 	var remainingPause = 1;
+	var currentSpeed = 5;
+	var currentTimer = 5000;
+	var currentStreak = 0;
 
 	function MathRacing(phaserGame) {
 		this.game = phaserGame;
@@ -32,7 +34,7 @@ var MathRacing = (function() {
 		this.numberOfLoop = 0; //count howmany update so far
 
 		this.mouseTouchDown = false;
-		this.seenObstacle = 0;
+		this.seenObstacle = false;
 
 		this.hasStarted = false;
 
@@ -44,8 +46,6 @@ var MathRacing = (function() {
 
 		this.roadCount = 0; // Number of road tiles
 		this.nextObstacleIndex = 0; // Index of where the obstacle tile should render
-
-		this.speedAI = SPEED;
 
 		this.car = undefined;
 		this.carAI = undefined;
@@ -110,6 +110,7 @@ var MathRacing = (function() {
 
 	MathRacing.prototype.init = function() {
 		//this.game.stage.backgroundColor = '#9bd3e1';
+		this.game.add.plugin(Phaser.Plugin.Debug);
 	};
 
 	MathRacing.prototype.checkObstacles = function() {
@@ -127,7 +128,7 @@ var MathRacing = (function() {
 						generateQuestion();
 						displayInput.text = '';
 						userTextInput = '';
-						timer.add(2000, this.alert, this);
+						timer.add(currentTimer, this.alert, this);
 						timer.start();
 						this.seenObstacle = true;
 					}
@@ -146,7 +147,8 @@ var MathRacing = (function() {
 						this.growCar();
 						//tween_rotate.start();
 					}
-					SPEED = 6;
+					currentSpeed += 0.3;
+					SPEED = currentSpeed;
 					//if (this.car.x <= this.carAI.x) {
 					//console.log('removing obstacle at' + i);
 					if (this.car.x > this.carAI.x) {
@@ -207,10 +209,20 @@ var MathRacing = (function() {
 		}, 1000, Phaser.Easing.Linear.None);
 		tween_rotate.start();
 		//this.car.tint = Math.random() * 0xffffff;
-		SPEED = 6;
+		currentSpeed -= 0.1 * currentStreak;
+		currentStreak = 0;
+		SPEED = currentSpeed;
 		if (this.car.x > this.carAI.x) {
 			currentObstacle++;
 		} else {
+			//console.log(arrObstacles[currentObstacle].key);
+			if (arrObstacles[currentObstacle].key == 'obstacle_2') {
+				isJumpingAI = true;
+			} else if (arrObstacles[currentObstacle].key == 'obstacle_3') {
+				this.game.add.tween(this.carAI).to({
+					tint: 0xe2e2e2,
+				}, 600, Phaser.Easing.Exponential.Out, true, 0, 0, true);
+			}
 			arrObstacles.splice(currentObstacle, 1); //remove obstacle that passed alraedy when falling behind AI				
 		}
 		answered = false;
@@ -311,7 +323,7 @@ var MathRacing = (function() {
 		var sprite;
 
 		if (arrTiles[4].children[0] === undefined) {
-			x = this.roadStartPosition.x;
+			x = this.roadStartPosition.x + 100;
 		} else {
 			x = arrTiles[4].children[0].x + 128;
 		}
@@ -334,9 +346,9 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.calculateNextObstacleIndex = function() {
-		// We calculate an index in the future, with some randomness (between 8 and 10 tiles in the future).
 		var minimumOffset = 8;
 		var maximumOffset = 10;
+		// We calculate an index in the future, with some randomness (between 8 and 10 tiles in the future).
 		var num = Math.random() * (maximumOffset - minimumOffset);
 		this.nextObstacleIndex = this.roadCount + Math.round(num) + minimumOffset;
 	};
@@ -360,15 +372,35 @@ var MathRacing = (function() {
 					opText = ' x ';
 					return a * b;
 					break;
+				case 3:
+					opText = ' / ';
+					return a * b;
+					break;
 			}
 		}
+		var result = mathResult(x, y, Math.floor(Math.random() * (4)));
 
-		var result = mathResult(x, y, Math.floor(Math.random() * (3)));
-		newQuestion = {
-			x: x,
-			y: y,
-			result: result,
-			op: opText
+		if (generatedQuestion.length > 0) {
+			for (var i = 0; i < generatedQuestion.length; i++) {
+				console.log(generatedQuestion[i].op);
+				if (x == generatedQuestion[i].x && y == generatedQuestion[i].y && result == generatedQuestion[i].result)
+					generateQuestion();
+			}
+		}
+		if (opText != ' / ') {
+			newQuestion = {
+				x: x,
+				y: y,
+				result: result,
+				op: opText
+			}
+		} else {
+			newQuestion = {
+				x: result,
+				y: y,
+				result: x,
+				op: opText
+			}
 		}
 		generatedQuestion.push(newQuestion);
 	};
@@ -427,14 +459,28 @@ var MathRacing = (function() {
 				} else if (keyCode == 13) {
 					console.log('user result: ' + userTextInput);
 					console.log('actual result: ' + result);
-					if (userTextInput == result && userTextInput != '') {
+					if (userTextInput == result) {
 						console.log('gratz');
 						totalAnswer++;
 						correctAnswer++;
+						currentStreak++;
+						if (currentStreak > 1) {
+							var streak = this.game.add.text(GAME_WIDTH / 2, 130, currentStreak + " combos", {
+								font: "40px Arial",
+								fill: "#FFFFFF",
+								align: "center"
+							});
+							streak.alpha = 0;
+							streak.anchor.set(0.5);
+							this.game.add.tween(streak).to({
+								alpha: 1
+							}, 400, Phaser.Easing.Linear.None, true, 0, 0, true);
+						}
+						if (currentSpeed < 10)
+							currentSpeed += 0.1 + currentStreak * 0.1;
+						if (timer > 4000) timer = timer - currentStreak * 100;
 						score++;
 						timer.destroy();
-						questionText.visible = false;
-						displayInput.visible = false;
 						boosterAI = -110;
 						questionText.text = newQuestion.x + newQuestion.op + newQuestion.y;
 						displayInput.text = '';
@@ -444,6 +490,8 @@ var MathRacing = (function() {
 						console.log('wrong bro');
 						isFailedQues = true;
 					}
+					questionText.visible = false;
+					displayInput.visible = false;
 					userTextInput = '';
 					displayInput.text = userTextInput;
 				} else if (keyCode == 8) {
@@ -554,9 +602,9 @@ var MathRacing = (function() {
 					// Unpause the game
 					this.game.paused = false;
 				}
+				questionText.visible = true;
+				displayInput.visible = true;
 			}
-			questionText.visible = true;
-			displayInput.visible = true;
 		};
 
 		timer = this.game.time.create(false);
@@ -580,6 +628,9 @@ var MathRacing = (function() {
 			fill: "#FFFFFF",
 			align: "center"
 		});
+		this.game.add.tween(startDisplay).to({
+			alpha: 0
+		}, 250, Phaser.Easing.Linear.None, true, 0, 0, true).loop(true);
 		startDisplay.anchor.set(0.5);
 		startDisplay.visible = false;
 		displayInput.anchor.setTo(0.5, 0.5);
@@ -616,55 +667,68 @@ var MathRacing = (function() {
 	};
 
 	function button0down() {
-		keyPress(48, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(48, newQuestion.result);
 	};
 
 	function button1down() {
-		keyPress(49, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(49, newQuestion.result);
 	};
 
 	function button2down() {
-		keyPress(50, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(50, newQuestion.result);
 	};
 
 	function button3down() {
-		keyPress(51, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(51, newQuestion.result);
 	};
 
 	function button4down() {
-		keyPress(52, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(52, newQuestion.result);
 	};
 
 	function button5down() {
-		keyPress(53, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(53, newQuestion.result);
 	};
 
 	function button6down() {
-		keyPress(54, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(54, newQuestion.result);
 	};
 
 	function button7down() {
-		keyPress(55, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(55, newQuestion.result);
 	};
 
 	function button8down() {
-		keyPress(56, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(56, newQuestion.result);
 	};
 
 	function button9down() {
-		keyPress(57, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(57, newQuestion.result);
 	};
 
 	function buttonEnterDown() {
-		keyPress(13, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(13, newQuestion.result);
 	};
 
 	function buttonMinusDown() {
-		keyPress(189, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(189, newQuestion.result);
 	};
 
 	function buttonDelDown() {
-		keyPress(8, newQuestion.result);
+		if (SPEED == 0)
+			keyPress(8, newQuestion.result);
 	};
 
 	MathRacing.prototype.carJump = function(isAI) {
@@ -713,6 +777,15 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.update = function() {
+		/*
+		if (SPEED == 0) {
+			questionText.visible = true;
+			displayInput.visible = true;
+		} else {
+			questionText.visible = false;
+			displayInput.visible = false;
+		}
+		*/
 		if (isFailedQues) this.failQuestion();
 		if (!this.hasStarted) {
 			startDisplay.visible = true;
@@ -824,18 +897,28 @@ var MathRacing = (function() {
 			noCorrect: correctAnswer,
 			total: totalAnswer
 		};
+		this.reset();
+		//console.log(passingPara);
+		game.state.start("resultState", true, false, passingPara);
+	};
+
+	MathRacing.prototype.reset = function() {
 		isJumping = false;
 		score = 0;
 		correctAnswer = 0;
 		totalAnswer = 0;
 		arrTiles = []; //create an array to hold tiles
 		this.numberOfLoop = 0; //count howmany update so far
-		this.seenObstacle = 0;
+		this.seenObstacle = false;
 		this.hasStarted = false;
 		this.roadCount = 0; // Number of road tiles
 		this.nextObstacleIndex = 0; // Index of where the obstacle tile should render
 		arrObstacles = []; // Array of all the objects that are deadly for the taxi
 		boosterAI = 0;
+		currentSpeed = 5;
+		SPEED = currentSpeed;
+		currentTimer = 5000;
+		currentStreak = 0;
 
 		this.car = undefined;
 		this.carX = CAR_START_X;
@@ -843,31 +926,10 @@ var MathRacing = (function() {
 		this.currentJumpHeight = 0;
 		generatedQuestion = [];
 		timer.destroy();
-		//console.log(passingPara);
-		game.state.start("resultState", true, false, passingPara);
-	};
 
-	MathRacing.prototype.reset = function() {
-		this.hasStarted = false;
-
-		this.speedAI = SPEED;
-		this.jumpSpeed = JUMP_HEIGHT;
-		isJumping = false;
-		this.currentJumpHeight = 0;
-		this.roadCount = 0;
-
-		this.nextObstacleIndex = 0;
-		arrObstacles = [];
-
-		this.mouseTouchDown = false;
-		this.carX = CAR_START_X;
-		this.carAIx = CAR_START_X;
-		boosterAI = 0;
-		score = 0;
-		correctAnswer = 0;
-		totalAnswer = 0;
 		this.nextQueueIndex = 0;
 		this.rightQueue = [];
+
 		currentObstacle = 0;
 		remainingPause = 1;
 		timer.destroy();
