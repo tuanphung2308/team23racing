@@ -42,6 +42,7 @@ levelSelect = {
 				yBtn.anchor.setTo(0.5, 0.5);
 
 				function noBtn_clicked() {
+<<<<<<< HEAD
 					$.ajax({ //save progress
 							url: 'gateway.php?job=delete'
 						})
@@ -51,6 +52,14 @@ levelSelect = {
 						.fail(function() {
 							console.log('failed');
 						});
+=======
+					var oReq = new XMLHttpRequest(); //New request object
+					oReq.onload = function() {
+						alert('kek');
+					};
+					oReq.open("get", "gateway.php?job=delete", true);
+					oReq.send();
+>>>>>>> origin/master
 					msgGroup.destroy(true, true);
 				};
 

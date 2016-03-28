@@ -7,7 +7,10 @@ resultState.prototype = {
 		this.passedData = passPara;
 	},
 	create: function() {
+<<<<<<< HEAD
 		var thisAcc = this.passedData.acc;
+=======
+>>>>>>> origin/master
 		this.game.add.tileSprite(0, 0, 1024, 768, 'resultBG');
 		var wrongStyle = {
 			font: "30px Arial",
@@ -64,6 +67,7 @@ resultState.prototype = {
 		menuLabel2.anchor.setTo(0.5, 0.5);
 		menuLabel3.anchor.setTo(0.5, 0.5);
 		this.game.input.onDown.add(this.start, this);
+<<<<<<< HEAD
 
 		var oReq = new XMLHttpRequest(); //New request object
 		oReq.onload = function() {
@@ -71,11 +75,23 @@ resultState.prototype = {
 				alert("You are doing it better");
 			} else if (this.Acc == this.responseText) {
 				alert("Keep up the good work!");
+=======
+		
+		var oReq = new XMLHttpRequest(); //New request object
+		oReq.onload = function() {
+			if (this.passedData.acc > this.responseText) {
+				alert("You are doing it better");
+			} else if (this.passedData.acc == this.responseText) {
+				alert("Keep up the good work");
+>>>>>>> origin/master
 			} else {
 				alert("You need to try harder!");
 			}
 		};
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 		oReq.open("get", "gateway.php?job=getlastperform", true);
 		oReq.send();
 	},

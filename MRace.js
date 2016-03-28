@@ -2,8 +2,18 @@ var MathRacing = (function() {
 	var JUMP_HEIGHT = 6.5;
 	var TILE_WIDTH = 127;
 	var TILE_HEIGHT = 128;
+<<<<<<< HEAD
 	var CAR_START_X = 384;
 	var DIFFICULTY = 2;
+=======
+<<<<<<< HEAD
+	var CAR_START_X = 384;
+	var DIFFICULTY = 2;
+=======
+	var SPEED = 5; //tiles speed
+	var CAR_START_X = 384;
+>>>>>>> origin/master
+>>>>>>> origin/master
 	var userTextInput = '';
 	var displayInput;
 	var newQuestion;
@@ -75,7 +85,14 @@ var MathRacing = (function() {
 		this.game.load.image('background', 'desert-view.png'); //Background
 		this.game.load.image('car', 'static/img/assets/taxi.png'); //DA CAR
 		this.game.load.image('obstacle_2', 'static/img/assets/obstacle_2' + stageDes + '.png'); //hole
+<<<<<<< HEAD
 		this.load.atlasJSONHash('taxitSheet', 'static/img/assets/taxi_spritesheet.png', 'static/img/assets/taxi_spritesheet.json'); //taxi sheet for animation
+=======
+<<<<<<< HEAD
+		this.load.atlasJSONHash('taxitSheet', 'static/img/assets/taxi_spritesheet.png', 'static/img/assets/taxi_spritesheet.json'); //taxi sheet for animation
+=======
+>>>>>>> origin/master
+>>>>>>> origin/master
 		this.load.atlasJSONHash('obstacle_1', 'static/img/assets/obstacle_1' + stageDes + '.png', 'static/img/assets/obstacle_1.json'); //trafic light
 		this.load.atlasJSONHash('obstacle_3', 'static/img/assets/obstacle_3' + stageDes + '.png', 'static/img/assets/obstacle_3' + stageDes + '.json'); //trafic light
 		this.game.load.image('button_0', 'static/img/assets/number0.png');
@@ -119,6 +136,7 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.init = function(loadData) {
+<<<<<<< HEAD
 		if (loadData == "") {
 			$.ajax({ //save progress
 					url: 'gateway.php?a=&q=&ua=&cc=diff=' + DIFFICULTY + '&ca=0&total=0&job=create'
@@ -156,6 +174,9 @@ var MathRacing = (function() {
 			}
 		}
 
+=======
+		alert(loadData);
+>>>>>>> origin/master
 		//this.game.stage.backgroundColor = '#9bd3e1';
 		//this.game.add.plugin(Phaser.Plugin.Debug);
 	};
@@ -276,7 +297,14 @@ var MathRacing = (function() {
 		questionText.visible = false;
 		displayInput.visible = false;
 		totalAnswer++;
+<<<<<<< HEAD
 		submitData();
+=======
+<<<<<<< HEAD
+		submitData();
+=======
+>>>>>>> origin/master
+>>>>>>> origin/master
 		boosterAI = 256;
 		isFailedQues = false;
 		timer.destroy();
@@ -442,6 +470,10 @@ var MathRacing = (function() {
 		if (generatedQuestion.length > 0) {
 			for (var i = 0; i < generatedQuestion.length; i++) {
 				//console.log(generatedQuestion[i].op);
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> origin/master
 				if (x == generatedQuestion[i].x && opText == generatedQuestion[i].op) {
 					console.log('found found');
 					newQues = createQuestion(opNo, max, min);
@@ -451,6 +483,13 @@ var MathRacing = (function() {
 					opText = newQues.opText;
 					i = 0;
 				}
+<<<<<<< HEAD
+=======
+=======
+				if (x == generatedQuestion[i].x && y == generatedQuestion[i].y && result == generatedQuestion[i].result)
+					generateQuestion();
+>>>>>>> origin/master
+>>>>>>> origin/master
 			}
 		}
 		return {
@@ -463,7 +502,11 @@ var MathRacing = (function() {
 
 	function generateQuestion() {
 		//var opNo = Math.round(Math.random() * (4));
+<<<<<<< HEAD
 		var opNo = 0;
+=======
+		var opNo = 3;
+>>>>>>> origin/master
 		//console.log('op no is: ' + opNo);
 		var max = DIFFICULTY * 20;
 		var min = max - 19;
@@ -532,7 +575,15 @@ var MathRacing = (function() {
 					}
 					displayInput.text = userTextInput;
 				} else if (keyCode == 13) {
+<<<<<<< HEAD
 					arrUA.push(userTextInput);
+=======
+<<<<<<< HEAD
+					arrUA.push(userTextInput);
+=======
+					//submitData();
+>>>>>>> origin/master
+>>>>>>> origin/master
 					console.log('user result: ' + userTextInput);
 					console.log('actual result: ' + result);
 					if (userTextInput == result) {
@@ -552,7 +603,15 @@ var MathRacing = (function() {
 								alpha: 1
 							}, 400, Phaser.Easing.Linear.None, true, 0, 0, true);
 						}
+<<<<<<< HEAD
 						if (currentSpeed < 6)
+=======
+<<<<<<< HEAD
+						if (currentSpeed < 6)
+=======
+						if (currentSpeed < 8)
+>>>>>>> origin/master
+>>>>>>> origin/master
 							currentSpeed += 0.1 + currentStreak * 0.1;
 						if (timer > 4000) timer = timer - currentStreak * 100;
 						score++;
@@ -854,6 +913,7 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.update = function() {
+		console.log('booster is ' + boosterAI);
 		/*
 		if (SPEED == 0) {
 			questionText.visible = true;
@@ -937,7 +997,15 @@ var MathRacing = (function() {
 			this.generateRightQueue();
 		}
 
+<<<<<<< HEAD
 		if (totalAnswer == 10) this.finish();
+=======
+<<<<<<< HEAD
+		if (totalAnswer == 1) this.finish();
+=======
+		if (totalAnswer == 10) this.finish();
+>>>>>>> origin/master
+>>>>>>> origin/master
 
 	};
 
@@ -1049,7 +1117,11 @@ var MathRacing = (function() {
 		var questionString = "";
 		var answerString = "";
 		var userString = "";
+<<<<<<< HEAD
 		var accuracy = parseInt(correctAnswer / totalAnswer * 100);
+=======
+		var accuracy = parseInt(correctAnswer / totalAnswer * 100) + ' %';
+>>>>>>> origin/master
 
 		for (var i = 0; i < generatedQuestion.length; i++) {
 			console.log('op is: ' + generatedQuestion[i].op);
@@ -1066,9 +1138,15 @@ var MathRacing = (function() {
 		questionString = questionString.slice(0, questionString.length - 1);
 		answerString = answerString.slice(0, answerString.length - 1);
 		userString = userString.slice(0, userString.length - 1);
+<<<<<<< HEAD
 		console.log(userString);
 		$.ajax({
 				url: 'gateway.php?a=' + answerString + '&q=' + questionString + '&ua=' + userString + '&cc=' + accuracy + '&diff=' + DIFFICULTY + '&ca=' + correctAnswer + '&total=' + totalAnswer + '&job=update'
+=======
+
+		$.ajax({
+				url: 'gateway.php?a=' + answerString + '&q=' + questionString + '&ua=' + userString + '&cc=' + accuracy + '&total=' + totalAnswer + '&job=create'
+>>>>>>> origin/master
 			})
 			.done(function() {
 				console.log('done');
@@ -1087,5 +1165,28 @@ var MathRacing = (function() {
 			this.game.debug.text('Accuracy: ' + parseInt(correctAnswer / totalAnswer * 100) + ' %', 32, 128);
 	};
 
+	function submitData() {
+		var questionString = "";
+		var answerString = "";
+		var result;
+		for (var i = 0; i < generatedQuestion.length; i++) {
+			questionString += generatedQuestion[i].x + generatedQuestion[i].op + generatedQuestion[i].y + ',';
+			answerString += generatedQuestion[i].result + ',';
+		}
+		questionString = questionString.slice(0, questionString.length - 1);
+		answerString = answerString.slice(0, answerString.length - 1);
+		console.log('gateway.php?a=' + answerString + '?q=' + questionString);
+
+		$.ajax({
+				//do sth here
+				url: 'gateway.php?a=' + answerString + ';?q=' + questionString
+			})
+			.done(function() {
+				console.log('done');
+			})
+			.fail(function() {
+				console.log('failed');
+			});
+	}
 	return MathRacing;
 })();

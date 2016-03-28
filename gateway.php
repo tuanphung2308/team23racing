@@ -2,6 +2,10 @@
 require('includes/config.php');
 
 //collect values from the url
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> origin/master
 
 //if id is number and the active token is not empty carry on
 if ($_GET["job"] == "create")
@@ -11,16 +15,24 @@ if ($_GET["job"] == "create")
 	$useranswer = ($_GET['ua']);
 	$accuracy = ($_GET['cc']);
 	//update users record set the active column to Yes where the memberID and active value match the ones provided in the array
+<<<<<<< HEAD
 	$stmt = $db->prepare("INSERT INTO playSession(question, answer, username, uAnswer, accuracy, totalQues, correctAnswer, difficulty) VALUES(:qString, :aString, :user, :uanswer, :acc, :total, :ca, :diff)");
+=======
+	$stmt = $db->prepare("INSERT INTO playSession(question, answer, username, uAnswer, accuracy, totalQues) VALUES(:qString, :aString, :user, :uanswer, :acc, :total)");
+>>>>>>> origin/master
 	$stmt->execute(array(
 		':qString' => $question,
 		':aString' => $answer,
 		':user' => $_SESSION['username'],
 		':uanswer' => $useranswer,
 		':acc' => $accuracy,
+<<<<<<< HEAD
 		':total' => trim($_GET['total']),
 		':ca' => trim($_GET['ca']),
 		':diff' => trim($_GET['diff'])
+=======
+		':total' => trim($_GET['total'])
+>>>>>>> origin/master
 	));
 }
 if  ($_GET["job"] == "update")
@@ -32,7 +44,11 @@ if  ($_GET["job"] == "update")
 	$query1 = $db->prepare("SELECT MAX(sessionID) FROM playsession WHERE username=:user");
 	$query1->execute(array(':user' => $_SESSION['username']));
 	$maxvalue[] = $query1->fetch(PDO::FETCH_ASSOC);
+<<<<<<< HEAD
 	$stmt = $db->prepare("UPDATE playsession SET question=:qString, correctAnswer=:ca, difficulty=:diff, answer=:aString, accuracy=:acc, uAnswer=:uanswer, totalQues = :total WHERE username=:user AND sessionID=:lastID");
+=======
+	$stmt = $db->prepare("UPDATE playsession SET question=:qString, answer=:aString, accuracy=:acc, uAnswer=:acc, totalQues = :total WHERE username=:user AND sessionID=:lastID");
+>>>>>>> origin/master
 	$stmt->execute(array(
 		':qString' => $question,
 		':aString' => $answer,
@@ -40,9 +56,13 @@ if  ($_GET["job"] == "update")
 		':acc' => $accuracy,
 		':uanswer' => $useranswer,
 		':user' => $_SESSION['username'],
+<<<<<<< HEAD
 		':total' => trim($_GET['total']),
 		':ca' => trim($_GET['ca']),
 		':diff' => trim($_GET['diff'])
+=======
+		':total' => trim($_GET['total'])
+>>>>>>> origin/master
 	));
 }
 if  ($_GET["job"] == "load") {
@@ -57,7 +77,11 @@ if  ($_GET["job"] == "load") {
 		':user' => $_SESSION['username'],
 		':lastID' => $maxvalue[0]['MAX(sessionID)']));
 	$lastTotal[] = $query2->fetch(PDO::FETCH_ASSOC);
+<<<<<<< HEAD
 	if ($lastTotal[0]['totalQues'] < 10 && $query2->rowCount() > 0){
+=======
+	if ($lastTotal[0]['totalQues'] < 10){
+>>>>>>> origin/master
 		echo json_encode("update");
 	} else {
 		echo json_encode("create");
@@ -107,14 +131,50 @@ if  ($_GET["job"] == "delete") //save progress
 }
 
 if  ($_GET["job"] == "lls") { //load last session
+<<<<<<< HEAD
 	$query1 = $db->prepare("SELECT MAX(sessionID) FROM playsession WHERE username=:user");
+=======
+	$query1 = $db->prepare("SELECT sessionID FROM playsession WHERE username = :user ORDER BY sessionID DESC LIMIT 1,1");
+>>>>>>> origin/master
 	$query1->execute(array(':user' => $_SESSION['username']));
 	$lastsession[] = $query1->fetch(PDO::FETCH_ASSOC);
 	$query2 =  $db->prepare("SELECT * FROM playsession WHERE username=:user AND sessionID=:lastID");
 	$query2->execute(array(
 		':user' => $_SESSION['username'],
+<<<<<<< HEAD
 		':lastID' => $lastsession[0]['MAX(sessionID)']));
 	$lastAcc[] = $query2->fetch(PDO::FETCH_ASSOC);
 	echo json_encode($lastAcc[0]);
 }
+=======
+		':lastID' => $lastsession[0]['sessionID']));
+	$lastAcc[] = $query2->fetch(PDO::FETCH_ASSOC);
+	echo json_encode($lastAcc[0]);
+}
+=======
+$answer = trim($_GET['a']);
+echo('a is: ' + a);
+$question = trim($_GET['q']);
+
+//if id is number and the active token is not empty carry on
+
+	//update users record set the active column to Yes where the memberID and active value match the ones provided in the array
+	$stmt = $db->prepare("INSERT INTO playSession(question, answer) VALUES(:qString, :aString)");
+	$stmt->execute(array(
+		':qString' => $answer,
+		':aString' => $question
+	));
+
+	//if the row was updated redirect the user
+	/*if($stmt->rowCount() == 1){
+
+		//redirect to login page
+		header('Location: login.php?action=active');
+		exit;
+
+	} else {
+		echo "Your account could not be activated."; 
+	}*/
+>>>>>>> origin/master
+>>>>>>> origin/master
 ?>
