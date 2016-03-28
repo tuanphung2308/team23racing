@@ -7,12 +7,67 @@ var currentPage;
 // arrows to navigate through level pages
 var leftArrow;
 var rightArrow;
+var job = "";
 
 levelSelect = {
-	init: function() {
-		this.game.stage.backgroundColor = '#9bd3e1';
-	},
+	init: function() {},
 	create: function() {
+		this.game.stage.backgroundColor = '#9bd3e1';
+		var oReq = new XMLHttpRequest(); //New request object
+		oReq.onload = function() {
+			job = this.responseText;
+			job = job.substring(1, job.length - 1);
+
+			if (job == "update") {
+				var msgGroup = game.add.group();
+				var msgBx = game.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, "messageBx");
+				msgGroup.add(msgBx);
+				var msgText = game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, "System found an unfinished session.\n Do you want to continue?", {
+					font: "30px Arial",
+					fill: "#B40404",
+					align: "center"
+				});
+				msgText.anchor.setTo(0.5, 0.5);
+				msgBx.anchor.setTo(0.5, 0.5);
+				msgBx.alpha = 0.9;
+
+				var xBtn = game.add.button(GAME_WIDTH / 2 - 40, GAME_HEIGHT / 2 + 80, "noBtn", noBtn_clicked, this);
+				var yBtn = game.add.button(GAME_WIDTH / 2 + 40, GAME_HEIGHT / 2 + 80, "yesBtn", yesBtn_clicked, this);
+
+				msgGroup.add(msgText);
+				msgGroup.add(xBtn);
+				msgGroup.add(yBtn);
+
+				xBtn.anchor.setTo(0.5, 0.5);
+				yBtn.anchor.setTo(0.5, 0.5);
+
+				function noBtn_clicked() {
+					$.ajax({ //save progress
+							url: 'gateway.php?job=delete'
+						})
+						.done(function() {
+							console.log('done');
+						})
+						.fail(function() {
+							console.log('failed');
+						});
+					msgGroup.destroy(true, true);
+				};
+
+				function yesBtn_clicked() {
+					var oReq = new XMLHttpRequest(); //New request object
+					oReq.onload = function() {
+						msgGroup.destroy(true, true);
+						game.state.start("MathRacing", true, false, this.responseText);
+					};
+					oReq.open("get", "gateway.php?job=lls", true);
+					oReq.send();
+				};
+			}
+		};
+		oReq.open("get", "gateway.php?job=load", true);
+		oReq.send();
+
 		// how many pages are needed to show all levels?
 		// CAUTION!! EACH PAGE SHOULD HAVE THE SAME AMOUNT OF LEVELS, THAT IS
 		// THE NUMBER OF LEVELS *MUST* BE DIVISIBLE BY THUMBCOLS*THUMBROWS
@@ -116,7 +171,7 @@ levelSelect = {
 		// the level is playable, then play the level!!
 		if (button.frame < 4) {
 			game.global.level = button.levelNumber;
-			game.state.start("MathRacing", true, false);
+			game.state.start("MathRacing", true, false, "");
 		}
 		// else, let's shake the locked levels
 		else {

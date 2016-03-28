@@ -7,7 +7,11 @@ loading = {
 		game.load.spritesheet("game", "game.png", 200, 80);
 		game.load.image('menu-background', 'menu-bg.png');
 		game.load.image("correct", "correct.png");
-		game.load.image("incorrect", "incorrect.png")
+		game.load.image("incorrect", "incorrect.png");
+		game.load.image("resultBG", "resultBg.png");
+		game.load.image("messageBx", "messageBox.png");
+		game.load.image("yesBtn", "yesButton.png");
+		game.load.image("noBtn", "noButton.png");
 	},
 	create: function() {
 		//scaling options
