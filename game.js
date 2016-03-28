@@ -16,7 +16,11 @@ game.global = {
 	// 0 = playable yet unfinished level
 	// 1, 2, 3 = level finished with 1, 2, 3 stars
 	// 4 = locked
+<<<<<<< HEAD
 	starsArray: [4,4,0,0,0,0,0,0,4,4,4,4,4,4,4,4,4,4,4,4],
+=======
+	starsArray : [0,0,0,0,0,0,0,0,4,4,4,4,4,4,4,4,4,4,4,4],
+>>>>>>> origin/master
 	// level currently playing
 	level: 0
 }
