@@ -27,7 +27,10 @@ var job = "";
 levelSelect = {
 	init: function() {},
 	create: function() {
+<<<<<<< HEAD
 		this.game.add.tileSprite(0, 0, 1024, 768, 'lvBg');
+=======
+>>>>>>> origin/master
 		this.game.stage.backgroundColor = '#9bd3e1';
 		var oReq = new XMLHttpRequest(); //New request object
 		oReq.onload = function() {
@@ -35,11 +38,14 @@ levelSelect = {
 			job = job.substring(1, job.length - 1);
 
 			if (job == "update") {
+<<<<<<< HEAD
 				console.log(levelThumbsGroup.children);
 				for (i = 0; i < levelThumbsGroup.children.length; i++) {
 					if (levelThumbsGroup.children[i] instanceof MyButton)
 						levelThumbsGroup.children[i].deactivate();
 				}
+=======
+>>>>>>> origin/master
 				var msgGroup = game.add.group();
 				var msgBx = game.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, "messageBx");
 				msgGroup.add(msgBx);
@@ -63,10 +69,14 @@ levelSelect = {
 				yBtn.anchor.setTo(0.5, 0.5);
 
 				function noBtn_clicked() {
+<<<<<<< HEAD
 					for (i = 0; i < levelThumbsGroup.children.length; i++) {
 						if (levelThumbsGroup.children[i] instanceof MyButton)
 							levelThumbsGroup.children[i].activate();
 					}
+=======
+<<<<<<< HEAD
+>>>>>>> origin/master
 					$.ajax({ //save progress
 							url: 'gateway.php?job=delete'
 						})
@@ -76,6 +86,7 @@ levelSelect = {
 						.fail(function() {
 							console.log('failed');
 						});
+<<<<<<< HEAD
 					msgGroup.destroy(true, true);
 				};
 
@@ -86,6 +97,20 @@ levelSelect = {
 					};
 					oReq.open("get", "gateway.php?job=loadlevel", true);
 					oReq.send();
+=======
+=======
+					var oReq = new XMLHttpRequest(); //New request object
+					oReq.onload = function() {
+						alert('kek');
+					};
+					oReq.open("get", "gateway.php?job=delete", true);
+					oReq.send();
+>>>>>>> origin/master
+					msgGroup.destroy(true, true);
+				};
+
+				function yesBtn_clicked() {
+>>>>>>> origin/master
 					var oReq = new XMLHttpRequest(); //New request object
 					oReq.onload = function() {
 						msgGroup.destroy(true, true);

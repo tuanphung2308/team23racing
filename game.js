@@ -3,11 +3,17 @@ var GAME_HEIGHT = 768;
 var game = new Phaser.Game(1024, 768, Phaser.AUTO, "");
 
 game.global = {
+<<<<<<< HEAD
 	sfxVol: 10,
 	bgmVol: 10,
 	thumbRows: 7,
 	// number of thumbnail cololumns
 	thumbCols: 5,
+=======
+	thumbRows: 5,
+	// number of thumbnail cololumns
+	thumbCols: 4,
+>>>>>>> origin/master
 	// width of a thumbnail, in pixels
 	thumbWidth: 64,
 	// height of a thumbnail, in pixels
@@ -18,6 +24,7 @@ game.global = {
 	// 0 = playable yet unfinished level
 	// 1, 2, 3 = level finished with 1, 2, 3 stars
 	// 4 = locked
+<<<<<<< HEAD
 	starsArray: [],
 	carsArray: [],
 	money: 0,
@@ -35,6 +42,21 @@ uReq.onload = function() {
 uReq.open("get", "gateway.php?job=puser", true);
 uReq.send();
 
+=======
+<<<<<<< HEAD
+	starsArray: [],
+=======
+<<<<<<< HEAD
+	starsArray: [4,4,0,0,0,0,0,0,4,4,4,4,4,4,4,4,4,4,4,4],
+=======
+	starsArray : [0,0,0,0,0,0,0,0,4,4,4,4,4,4,4,4,4,4,4,4],
+>>>>>>> origin/master
+>>>>>>> origin/master
+	// level currently playing
+	level: 0
+}
+
+>>>>>>> origin/master
 var oReq = new XMLHttpRequest(); //New request object
 oReq.onload = function() {
 	//console.log(this.responseText.substring(1, this.responseText.length - 1).split(","));
@@ -45,6 +67,7 @@ oReq.onload = function() {
 oReq.open("get", "gateway.php?job=lp", true);
 oReq.send();
 
+<<<<<<< HEAD
 var qReq = new XMLHttpRequest(); //New request object
 qReq.onload = function() {
 	//console.log(this.responseText.substring(1, this.responseText.length - 1).split(","));
@@ -75,6 +98,8 @@ mReq.onload = function() {
 mReq.open("get", "gateway.php?job=gmoney", true);
 mReq.send();
 
+=======
+>>>>>>> origin/master
 // game states
 game.state.add("Loading", loading);
 game.state.add("menuState", menuState);

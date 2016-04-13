@@ -12,6 +12,7 @@ loading = {
 		game.load.image("messageBx", "messageBox.png");
 		game.load.image("yesBtn", "yesButton.png");
 		game.load.image("noBtn", "noButton.png");
+<<<<<<< HEAD
 		game.load.image("playBtn", "playBtn.png");
 		game.load.image("optionBtn", "optionBtn.png");
 		game.load.image("shopBtn", "shopBtn.png");
@@ -30,6 +31,8 @@ loading = {
 		game.load.image('sign_mult', 'sign_mult.png');
 		game.load.image('sign_divide', 'sign_divide.png');
 		game.load.image('sign_all', 'all.png');
+=======
+>>>>>>> origin/master
 	},
 	create: function() {
 		//scaling options
