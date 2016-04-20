@@ -24,7 +24,8 @@ game.global = {
 	username: "",
 	// level currently playing
 	level: 0,
-	selectedCar: 1
+	selectedCar: 1,
+	firstTime: 3
 }
 
 var uReq = new XMLHttpRequest(); //New request object
@@ -75,9 +76,21 @@ mReq.onload = function() {
 mReq.open("get", "gateway.php?job=gmoney", true);
 mReq.send();
 
+var zReq = new XMLHttpRequest();
+zReq.onload = function() {
+	console.log(this.responseText.substring(1, this.responseText.length - 1).split(","));
+	game.global.firstTime = this.responseText.substring(1, this.responseText.length - 1).split(",").map(function(n) {
+		return Number(n);
+	});;
+};
+zReq.open("get", "gateway.php?job=gfuser", true);
+zReq.send();
+
 // game states
 game.state.add("Loading", loading);
 game.state.add("menuState", menuState);
+game.state.add("firstTime", firstTime);
+game.state.add("optionState", optionState);
 game.state.add("LevelSelect", levelSelect);
 game.state.add("PlayLevel", playLevel);
 game.state.add("MathRacing", MathRacing);

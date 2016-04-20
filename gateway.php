@@ -74,6 +74,22 @@ if  ($_GET["job"] == "gcar")
 	echo json_encode($carvalue[0]['selectedCar']);
 }
 
+if  ($_GET["job"] == "ufuser") //update car sets
+{
+	$stmt = $db->prepare("UPDATE members SET firstTimeUser = 0 WHERE username=:user");
+	$stmt->execute(array(
+		':user' => $_SESSION['username']
+	));
+}
+
+if  ($_GET["job"] == "gfuser")
+{
+	$query1 = $db->prepare("SELECT firstTimeUser FROM members WHERE username=:user");
+	$query1->execute(array(':user' => $_SESSION['username']));
+	$carvalue[] = $query1->fetch(PDO::FETCH_ASSOC);
+	echo json_encode($carvalue[0]['firstTimeUser']);
+}
+
 if  ($_GET["job"] == "ucar")
 {
 	$carid = trim($_GET['cid']);

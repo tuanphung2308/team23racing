@@ -2,11 +2,17 @@ var resultState = function() {
 	this.passedData = 0;
 	this.lastACC = 0;
 };
+var music;
 resultState.prototype = {
 	init: function(passPara) {
 		this.passedData = passPara;
 	},
 	create: function() {
+		music = game.add.audio('resultMusic');
+		music.volume = music.volume + 0.1 * game.global.bgmVol;
+		music.loopFull();
+		music.play();
+
 		var thisAcc = this.passedData.acc;
 		this.game.add.tileSprite(0, 0, 1024, 768, 'resultBG');
 		var wrongStyle = {
@@ -49,6 +55,12 @@ resultState.prototype = {
 			align: "center"
 		});
 
+		this.game.add.text(GAME_WIDTH / 2, 600, "You gain " + this.passedData.score * 100 + "$", {
+			font: "60px Arial",
+			fill: " #FFFF00",
+			align: "center"
+		}).anchor.setTo(0.5, 0.5);
+
 		this.game.add.text(GAME_WIDTH / 2, 700, "Return", {
 			font: "40px Arial",
 			fill: " #FFFFFF",
@@ -80,6 +92,7 @@ resultState.prototype = {
 		oReq.send();
 	},
 	start: function() {
+		music.stop();
 		this.game.state.start("LevelSelect");
 	},
 };

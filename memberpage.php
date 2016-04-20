@@ -57,7 +57,9 @@ require('layout/footer.php');
 
     <div id="container"></div>
 	<script src="loading.js"></script>
+	<script src="firstTime.js"></script>
 	<script src="shop.js"></script>
+	<script src="option.js"></script>
 	<script src="menu.js"></script>
 	<script src="building.js"></script>
 	<script src="result.js"></script>

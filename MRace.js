@@ -32,6 +32,8 @@ var MathRacing = (function() {
 	var currentStreak = 0;
 	var delayTimer;
 	var msgGroup;
+	var music;
+	var stopPlay = 0;
 	var savedBoost = 0;
 
 	function MathRacing(phaserGame) {
@@ -77,10 +79,9 @@ var MathRacing = (function() {
 		} else if (25 < stageDes && stageDes < 36) {
 			stageDes = '_sky';
 		}
-		alert(stageDes);
 		// This.game.load = instance of Phaser.Loader
 		this.game.load.image('tile_road_1', 'static/img/assets/tile_road_1' + stageDes + '.png'); //TILE ROAD
-		this.game.load.image('background', 'desert-view.png'); //Background
+		this.game.load.image('background', 'background' + stageDes + '.png'); //Background
 		this.game.load.image('car', 'static/img/assets/taxi.png'); //DA CAR
 		this.game.load.image('obstacle_2', 'static/img/assets/obstacle_2' + stageDes + '.png'); //hole
 		this.load.atlasJSONHash('taxitSheet', 'static/img/assets/taxi_spritesheet.png', 'static/img/assets/taxi_spritesheet.json'); //taxi sheet for animation
@@ -194,14 +195,24 @@ var MathRacing = (function() {
 					displayInput.visible = true;
 					console.log('take a break ;)');
 					SPEED = 0;
+					if (stopPlay == 0) {
+						this.sfx.brake.play();
+						stopPlay = 1;
+					}
 				} else {
 					if (sprite.key == 'obstacle_1') {
+						this.sfx.light.play();
 						sprite.animations.play('turnGreen');
+						stopPlay = 0;
 					} else if (sprite.key == 'obstacle_2') {
+						this.sfx.jump.play();
+						stopPlay = 0;
 						isJumping = true;
 					} else if (sprite.key == 'obstacle_3') {
+						this.sfx.hit.play();
 						sprite.animations.play('rockBreak');
 						this.growCar();
+						stopPlay = 0;
 						//tween_rotate.start();
 					}
 					currentSpeed += 0.3;
@@ -426,8 +437,10 @@ var MathRacing = (function() {
 			case 2:
 				console.log('minus');
 				opText = ' - ';
-				x = Math.round(Math.random() * (max - min) + min);
-				y = Math.round(Math.random() * max);
+				while (Math.abs(x - y) < 5) {
+					x = Math.round(Math.random() * (max - min) + min);
+					y = Math.round(Math.random() * max);
+				}
 				result = x - y;
 				break;
 			case 3:
@@ -496,7 +509,9 @@ var MathRacing = (function() {
 		if (opNo % 5 != 0) {
 			newQues = createQuestion(opNo, max, min);
 		} else {
-			newQues = createQuestion(Math.round(Math.random() * 4 + 1), max, min);
+			var u = Math.round(Math.random() * 3 + 1);
+			console.log('ops is' + u);
+			newQues = createQuestion(u, max, min);
 		}
 		console.log('x is ' + newQues.x);
 		console.log('y is ' + newQues.y);
@@ -566,7 +581,7 @@ var MathRacing = (function() {
 					console.log('user result: ' + userTextInput);
 					console.log('actual result: ' + result);
 					if (userTextInput == result) {
-						console.log('gratz');
+						//console.log('gratz');
 						totalAnswer++;
 						correctAnswer++;
 						currentStreak++;
@@ -631,7 +646,20 @@ var MathRacing = (function() {
 	}
 
 	MathRacing.prototype.create = function() {
-		this.game.add.tileSprite(0, 0, 1024, 288, 'background');
+		this.game.add.tileSprite(0, 0, 1024, 500, 'background');
+
+		music = game.add.audio('gameMusic');
+		music.volume = music.volume + 0.1 * game.global.bgmVol;
+		music.loopFull();
+		music.play();
+
+		this.sfx = {
+			hit: this.game.add.audio('hit'),
+			jump: this.game.add.audio('jump'),
+			brake: this.game.add.audio('brake'),
+			light: this.game.add.audio('sfxlight'),
+			fail: this.game.add.audio('sfxfail')
+		};
 
 		var numberOfLayers = 9;
 
@@ -927,6 +955,7 @@ var MathRacing = (function() {
 			SPEED = currentSpeed;
 		}
 		if (isFailedQues) {
+			this.sfx.fail.play();
 			/*this.game.add.tween(this.car).to({
 				angle: 180
 			}, 200, Phaser.Easing.Linear.Nonem, true, 0, 0, false);*/
@@ -1033,8 +1062,8 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.finish = function() {
-		console.log(arrUA);
-		game.global.money += score * 100;
+		//console.log(arrUA);
+		game.global.money = game.global.money - 1 + 1 + score * 100;
 		$.ajax({ //save progress
 				url: 'gateway.php?job=umoney&mon=' + game.global.money
 			})
@@ -1067,6 +1096,7 @@ var MathRacing = (function() {
 			});
 
 		var passingPara = {
+			score: score,
 			quesList: generatedQuestion,
 			acc: accuracy,
 			noCorrect: correctAnswer,
@@ -1079,6 +1109,7 @@ var MathRacing = (function() {
 	};
 
 	MathRacing.prototype.reset = function() {
+		music.stop();
 		isJumping = false;
 		score = 0;
 		correctAnswer = 0;
@@ -1097,6 +1128,7 @@ var MathRacing = (function() {
 		currentTimer = 5000;
 		currentStreak = 0;
 		savedBoost = 0;
+		stopPlay = 0;
 
 		this.car = undefined;
 		this.carX = CAR_START_X;

@@ -5,11 +5,16 @@ var price;
 var carsPrice = [100, 200, 300, 400];
 var bb;
 var bf;
+var music;
 var shopState = {
 	init: function() {
 		this.game.stage.backgroundColor = '#9bd3e1';
 	},
 	create: function() {
+		music = game.add.audio('shopMusic');
+		music.loopFull();
+		music.play();
+		music.volume = music.volume + 0.1 * game.global.bgmVol;
 		index = game.global.selectedCar - 1 + 1;
 		console.log(index - 1);
 		this.game.add.tileSprite(0, 0, 1024, 768, 'garage_bg');
@@ -18,15 +23,15 @@ var shopState = {
 		leftArrow = game.add.button(50, GAME_HEIGHT - 50, "level_arrows", this.arrowClicked, this);
 		leftArrow.anchor.setTo(0.5);
 
-		bf = this.game.add.button(900, GAME_HEIGHT / 2 - 100, "btn_back", this.forwardClicked);
-		bb = this.game.add.button(124, GAME_HEIGHT / 2 - 100, "btn_forward", this.backClicked);
+		bf = this.game.add.button(800, GAME_HEIGHT / 2 + 120, "btn_back", this.forwardClicked);
+		bb = this.game.add.button(224, GAME_HEIGHT / 2 + 120, "btn_forward", this.backClicked);
 
-		this.game.add.button(GAME_WIDTH / 2 + 100, GAME_HEIGHT / 2 + 100, "setBtn", this.setClicked).anchor.setTo(0.5, 0.5);
-		this.game.add.button(GAME_WIDTH / 2 - 100, GAME_HEIGHT / 2 + 100, "btn_shopbuy", this.buyClicked).anchor.setTo(0.5, 0.5);
+		this.game.add.button(GAME_WIDTH / 2 + 100, GAME_HEIGHT / 2 + 280, "setBtn", this.setClicked).anchor.setTo(0.5, 0.5);
+		this.game.add.button(GAME_WIDTH / 2 - 100, GAME_HEIGHT / 2 + 280, "btn_shopbuy", this.buyClicked).anchor.setTo(0.5, 0.5);
 
-		price = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 50, carsPrice[index - 1] + '$', {
+		price = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 240, carsPrice[index - 1] + '$', {
 			font: "40px Arial",
-			fill: "#FFFFFF",
+			fill: "#000000",
 			align: "center"
 		});
 		price.anchor.setTo(0.5, 1);
@@ -34,7 +39,7 @@ var shopState = {
 			price.setText("Owned!");
 		}
 
-		carInShop = this.game.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 100, "car2", "car" + index);
+		carInShop = this.game.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 90, "car2", "car" + index);
 		carInShop.scale.setTo(8, 8);
 		carInShop.anchor.setTo(0.5, 0.5);
 		//this.game.add.sprite(400, GAME_HEIGHT / 2 + 48- 100, "car3").scale.setTo(4, 4);
@@ -60,7 +65,7 @@ var shopState = {
 		}
 	},
 	buyClicked: function() {
-		if (game.global.carsArray[index - 1] == 0) {
+		if (game.global.carsArray[index - 1] == 0 && game.global.money > carsPrice[index - 1]) {
 			var msgGroup = game.add.group();
 			var msgBx = game.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, "messageBx");
 			msgGroup.add(msgBx);
@@ -116,7 +121,7 @@ var shopState = {
 			var msgGroup = game.add.group();
 			var msgBx = game.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, "messageBx");
 			msgGroup.add(msgBx);
-			var msgText = game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, "You already own this car!", {
+			var msgText = game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, "Failed to purchase!", {
 				font: "30px Arial",
 				fill: "#B40404",
 				align: "center"
@@ -219,6 +224,7 @@ var shopState = {
 	},
 	arrowClicked: function(button) {
 		// touching right arrow and still not reached last page
+		music.stop();
 		game.state.start("menuState");
 	},
 };

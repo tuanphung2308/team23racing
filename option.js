@@ -1,47 +1,95 @@
-var popGroup;
+var leftArrow;
+var sfxText;
+var bgmText;
+var temp1;
+var temp2;
+var music;
 var optionState = {
 	init: function() {
 		this.game.stage.backgroundColor = '#9bd3e1';
 	},
 	create: function() {
-		this.game.add.tileSprite(0, 0, 1024, 768, 'menu-background');
-		popGroup = game.add.group();
-		var popin = this.game.add.sprite(GAME_WIDTH / 2, -5, 'popin');
+		temp1 = game.global.sfxVol;
+		temp2 = game.global.bgmVol;
+		index = game.global.selectedCar - 1 + 1;
 
-		var logText = this.game.add.text(GAME_WIDTH / 2, -10, 'Logged in as ' + game.global.username, {
-			font: "25px Arial",
+		music = game.add.audio('shopMusic');
+		music.volume += 0.1 * game.global.bgmVol;
+		music.loopFull();
+		music.play();
+
+		this.game.add.tileSprite(0, 0, 1024, 768, 'garage_bg');
+		game.add.sprite(0, 0, 'ui_bar');
+		game.add.sprite(GAME_WIDTH / 2 - 32, 5, 'ui_money');
+		leftArrow = game.add.button(50, GAME_HEIGHT - 50, "level_arrows", this.arrowClicked, this);
+		leftArrow.anchor.setTo(0.5);
+
+		this.game.add.button(570, GAME_HEIGHT / 2 - 150, "btn_back", this.forward1Clicked);
+		this.game.add.button(424, GAME_HEIGHT / 2 - 150, "btn_forward", this.back1Clicked);
+		this.game.add.button(570, GAME_HEIGHT / 2 - 100, "btn_back", this.forward2Clicked);
+		this.game.add.button(424, GAME_HEIGHT / 2 - 100, "btn_forward", this.back2Clicked);
+		this.game.add.text(GAME_WIDTH / 2 - 200, GAME_HEIGHT / 2 - 100, "SFX", {
+			font: "40px Arial",
+			fill: "#000000",
+			align: "center"
+		}).anchor.setTo(0.5, 1);
+		this.game.add.text(GAME_WIDTH / 2 - 200, GAME_HEIGHT / 2 - 45, "BGM", {
+			font: "40px Arial",
+			fill: "#000000",
+			align: "center"
+		}).anchor.setTo(0.5, 1);
+
+
+		this.game.add.button(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 50, "setBtn", this.setClicked).anchor.setTo(0.5, 0.5);
+
+		sfxText = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 100, game.global.sfxVol, {
+			font: "40px Arial",
 			fill: "#000000",
 			align: "center"
 		});
-
-		logText.anchor.setTo(0.5, 0.5);
-		popin.anchor.setTo(0.5, 0.5)
-
-		popGroup.add(popin);
-		popGroup.add(logText);
-
-		game.add.tween(popGroup).to( {y: 30}, 1000, Phaser.Easing.Back.InOut, true).yoyo(false);
-		var menuLabel = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 3, 'Race Game!', {
-			font: "70px Arial",
-			fill: "#ffffff",
+		bgmText = this.game.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 45, game.global.bgmVol, {
+			font: "40px Arial",
+			fill: "#000000",
 			align: "center"
 		});
-		menuLabel.anchor.setTo(0.5, 0.5);
-
-		/*this.game.add.tween(desLabel).to({
-			alpha: 0
-		}, 250, Phaser.Easing.Linear.None, true, 0,0, true).loop(true);*/
-		this.game.add.button(290, 500, 'playBtn', this.play_down, this, 2, 1, 0);
-		this.game.add.button(458, 500, 'optionBtn', this.play_down, this, 2, 1, 0);
-		this.game.add.button(626, 500, 'shopBtn', this.shop_down, this, 2, 1, 0);
+		sfxText.anchor.setTo(0.5, 1);
+		bgmText.anchor.setTo(0.5, 1);
 	},
-	play_down: function() {
-		this.game.state.start("LevelSelect");
+	render: function() {
+		this.game.debug.text(game.global.money, GAME_WIDTH / 2 + 20, 25);
 	},
-	option_down: function() {
-		this.game.state.start("LevelSelect");
+	back1Clicked: function() {
+		if (temp1 > 1) {
+			temp1 -= 1;
+			sfxText.setText(temp1);
+		}
 	},
-	shop_down: function() {
-		this.game.state.start("shopState");
+	back2Clicked: function() {
+		if (temp2 > 1) {
+			temp2 -= 1;
+			bgmText.setText(temp2);
+		}
+	},
+	setClicked: function() {
+		game.global.bgmVol = temp2;
+		game.global.sfxVol = temp1;
+		music.volume = music.volume + 0.1 * game.global.bgmVol;
+	},
+	forward1Clicked: function() {
+		if (temp1 < 10) {
+			temp1 += 1;
+			sfxText.setText(temp1);
+		}
+	},
+	forward2Clicked: function() {
+		if (temp2 < 10) {
+			temp2 += 1;
+			bgmText.setText(temp2);
+		}
+	},
+	arrowClicked: function(button) {
+		// touching right arrow and still not reached last page
+		music.stop();
+		game.state.start("menuState");
 	},
 };

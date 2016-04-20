@@ -15,6 +15,7 @@ MyButton.prototype.deactivate = function() {
 
 // how many pages are needed to show all levels?
 var pages;
+var music;
 // group where to place all level thumbnails
 var levelThumbsGroup;
 // current page
@@ -28,7 +29,14 @@ levelSelect = {
 	init: function() {},
 	create: function() {
 		this.game.add.tileSprite(0, 0, 1024, 768, 'lvBg');
+		this.game.add.sprite(0, 0, 'ui_bar');
+		this.game.add.sprite(GAME_WIDTH / 2 - 32, 5, 'ui_money');
 		this.game.stage.backgroundColor = '#9bd3e1';
+
+		music = game.add.audio('menuMusic');
+		music.volume = music.volume + 0.1 * game.global.bgmVol;
+		music.loopFull();
+		music.play();
 		var oReq = new XMLHttpRequest(); //New request object
 		oReq.onload = function() {
 			job = this.responseText;
@@ -138,7 +146,9 @@ levelSelect = {
 			var offsetY = (game.height - levelHeight) / 2;
 			// looping through each level thumbnails
 			for (var i = 0; i < game.global.thumbRows; i++) {
-				this.game.add.text(offsetX - 100, offsetY + 20 + i * (game.global.thumbHeight + game.global.thumbSpacing), "Level " + (i + 1));
+				this.game.add.text(offsetX - 100, offsetY + 20 + i * (game.global.thumbHeight + game.global.thumbSpacing), "Level " + (i + 1), {
+					fill: "#FFFFFF"
+				});
 				for (var j = 0; j < game.global.thumbCols; j++) {
 					// which level does the thumbnail refer?
 					var levelNumber = i * game.global.thumbCols + j + l * (game.global.thumbRows * game.global.thumbCols);
@@ -169,11 +179,13 @@ levelSelect = {
 	},
 	arrowClicked: function(button) {
 		// touching right arrow and still not reached last page
+		music.stop();
 		game.state.start("menuState");
 	},
 	thumbClicked: function(button) {
 		// the level is playable, then play the level!!
 		if (button.frame < 4) {
+			music.stop();
 			game.global.level = button.levelNumber;
 			game.state.start("MathRacing", true, false, "");
 		}
@@ -194,5 +206,8 @@ levelSelect = {
 			}, 20, Phaser.Easing.Cubic.None);
 			buttonTween.start();
 		}
+	},
+	render: function() {
+		this.game.debug.text(game.global.money, GAME_WIDTH / 2 + 20, 25);
 	}
 }
