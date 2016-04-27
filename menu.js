@@ -44,7 +44,7 @@ var menuState = {
 	},
 	play_down: function() {
 		music.stop();
-		if (game.global.firstTime == 1) {
+		if (game.global.isFirstTime == 1) {
 			this.game.state.start("firstTime");
 		} else {
 			this.game.state.start("LevelSelect");

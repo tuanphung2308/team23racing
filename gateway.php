@@ -30,7 +30,7 @@ if ($_GET["job"] == "create")
 	));
 }
 
-if  ($_GET["job"] == "gmoney") //get car sets
+if  ($_GET["job"] == "gmoney") //get money
 {
 	$query1 = $db->prepare("SELECT money FROM members WHERE username=:user");
 	$query1->execute(array(':user' => $_SESSION['username']));
@@ -38,7 +38,7 @@ if  ($_GET["job"] == "gmoney") //get car sets
 	echo json_encode($carvalue[0]['money']);
 }
 
-if  ($_GET["job"] == "umoney") //update car sets
+if  ($_GET["job"] == "umoney") //update money
 {
 	$carr = trim($_GET['mon']);
 	$stmt = $db->prepare("UPDATE members SET money =:carr WHERE username=:user");
@@ -196,6 +196,15 @@ if  ($_GET["job"] == "lls") { //load last session
 		':lastID' => $lastsession[0]['MAX(sessionID)']));
 	$lastAcc[] = $query2->fetch(PDO::FETCH_ASSOC);
 	echo json_encode($lastAcc[0]);
+}
+if  ($_GET["job"] == "loadChildTab") { //load last session
+	$query1 = $db->prepare("SELECT * FROM members WHERE username=:user");
+	$query1->execute(array(':user' => $_SESSION['username']));
+	$parentOf[] = $query1->fetch(PDO::FETCH_ASSOC);
+	$query2 =  $db->prepare("SELECT * FROM playsession WHERE username=:user");
+	$query2->execute(array(':user' => $parentOf[0]['parentOf']));
+	$lastAcc[] = $query2->fetchAll();
+	echo json_encode($lastAcc);
 }
 
 if  ($_GET["job"] == "loadlevel") { //load last session

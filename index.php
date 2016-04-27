@@ -5,6 +5,12 @@ if( $user->is_logged_in() ){ header('Location: memberpage.php'); }
 
 //if form has been submitted process it
 if(isset($_POST['submit'])){
+	$searchUser = $db->prepare('SELECT * FROM members WHERE username = :username');
+	$searchUser->execute(array(':username' => $_POST['childname']));
+	$countChild = $searchUser->rowCount();
+	if ($countChild < 1){
+		$error[] = 'No user found by that username.';
+	}
 
 	//very basic validation
 	if(strlen($_POST['username']) < 3){
@@ -59,20 +65,22 @@ if(isset($_POST['submit'])){
 		try {
 
 			//insert into database with a prepared statement
-			$stmt = $db->prepare('INSERT INTO members (username,password,email,active) VALUES (:username, :password, :email, :active)');
+			$stmt = $db->prepare('INSERT INTO members (username,password,email,active,parentOf,type) VALUES (:username, :password, :email, :active, :childname, :acctype)');
 			$stmt->execute(array(
 				':username' => $_POST['username'],
 				':password' => $hashedpassword,
 				':email' => $_POST['email'],
-				':active' => $activasion
+				':childname' => $_POST['childname'],
+				':acctype' => $_POST['accounttype'],
+				':active' => Yes
 			));
 			$id = $db->lastInsertId('memberID');
 
 			//send email
 			$to = $_POST['email'];
 			$subject = "Registration Confirmation";
-			$body = "<p>Thank you for registering at demo site.</p>
-			<p>To activate your account, please click on this link: <a href='".DIR."activate.php?x=$id&y=$activasion'>".DIR."activate.php?x=$id&y=$activasion</a></p>
+			$body = "<p>Thank you for registering at Math Racing.</p>
+			<p>To login, please click on this link: <a href='".DIR."activate.php?x=$id&y=$activasion'>".DIR."activate.php?x=$id&y=$activasion</a></p>
 			<p>Regards Site Admin</p>";
 
 			$mail = new Mail();
@@ -96,7 +104,7 @@ if(isset($_POST['submit'])){
 }
 
 //define page title
-$title = 'Demo';
+$title = 'Login and Register';
 
 //include header template
 require('layout/header.php');
@@ -123,10 +131,19 @@ require('layout/header.php');
 
 				//if action is joined show sucess
 				if(isset($_GET['action']) && $_GET['action'] == 'joined'){
-					echo "<h2 class='bg-success'>Registration successful, please check your email to activate your account.</h2>";
+					echo "<h2 class='bg-success'>Registration successful, please Login.</h2>";
 				}
 				?>
+							<label>Account Type</label>
 
+						  <div class="accounttype">
+                                <select name="accounttype" id="accounttype">
+                                  <option id="student"value="student" selected="selected">Student</option>
+                                  <option id="teacher"value="teacher">Teacher</option>
+                                  <option id="parent"value="parent">Parent</option>
+                                </select>
+                                </div>
+                                <br></br>
 				<div class="form-group">
 					<input type="text" name="username" id="username" class="form-control input-lg" placeholder="User Name" value="<?php if(isset($error)){ echo $_POST['username']; } ?>" tabindex="1">
 				</div>
@@ -138,6 +155,7 @@ require('layout/header.php');
 						<div class="form-group">
 							<input type="password" name="password" id="password" class="form-control input-lg" placeholder="Password" tabindex="3">
 						</div>
+
 					</div>
 					<div class="col-xs-6 col-sm-6 col-md-6">
 						<div class="form-group">
@@ -145,9 +163,11 @@ require('layout/header.php');
 						</div>
 					</div>
 				</div>
-
+				<div class="form-group">
+					<input type="text" name="childname" id="childname" class="form-control input-lg" placeholder="Children Username (Optional)" value="<?php if(isset($error)){ echo $_POST['childname']; } ?>" tabindex="5">
+				</div>
 				<div class="row">
-					<div class="col-xs-6 col-md-6"><input type="submit" name="submit" value="Register" class="btn btn-primary btn-block btn-lg" tabindex="5"></div>
+					<div class="col-xs-6 col-md-6"><input type="submit" name="submit" value="Register" class="btn btn-primary btn-block btn-lg" tabindex="6"></div>
 				</div>
 			</form>
 		</div>

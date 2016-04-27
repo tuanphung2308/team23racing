@@ -13,7 +13,14 @@ if(isset($_POST['submit'])){
 	
 	if($user->login($username,$password)){ 
 		$_SESSION['username'] = $username;
-		header('Location: memberpage.php');
+		$query1 = $db->prepare("SELECT money FROM members WHERE username=:user");
+		$query1->execute(array(':user' => $_SESSION['username']));
+		$row1[] = $query1->fetch(PDO::FETCH_ASSOC);
+		if ($row1[0]['money'] == "student") {
+			header('Location: memberpage.php');
+		} else {
+			header('Location: display.php');
+		}
 		exit;
 	
 	} else {

@@ -25,7 +25,7 @@ game.global = {
 	// level currently playing
 	level: 0,
 	selectedCar: 1,
-	firstTime: 3
+	isFirstTime: 3
 }
 
 var uReq = new XMLHttpRequest(); //New request object
@@ -79,7 +79,7 @@ mReq.send();
 var zReq = new XMLHttpRequest();
 zReq.onload = function() {
 	console.log(this.responseText.substring(1, this.responseText.length - 1).split(","));
-	game.global.firstTime = this.responseText.substring(1, this.responseText.length - 1).split(",").map(function(n) {
+	game.global.isFirstTime = this.responseText.substring(1, this.responseText.length - 1).split(",").map(function(n) {
 		return Number(n);
 	});;
 };

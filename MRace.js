@@ -76,8 +76,10 @@ var MathRacing = (function() {
 			stageDes = '';
 		} else if (15 < stageDes && stageDes < 26) {
 			stageDes = '_forest';
-		} else if (25 < stageDes && stageDes < 36) {
+		} else if (25 < stageDes && stageDes < 31) {
 			stageDes = '_sky';
+		} else if (31 < stageDes && stageDes < 36) {
+			stageDes = '_space';
 		}
 		// This.game.load = instance of Phaser.Loader
 		this.game.load.image('tile_road_1', 'static/img/assets/tile_road_1' + stageDes + '.png'); //TILE ROAD
@@ -1082,7 +1084,11 @@ var MathRacing = (function() {
 			} else if (accuracy >= 50 && accuracy <= 60) {
 				game.global.starsArray[game.global.level - 1] = 1;
 			}
-			game.global.starsArray[game.global.level] = 0;
+			if (game.global.level < 35){			
+				game.global.starsArray[game.global.level] = 0;
+				if (game.global.level < 31)
+					game.global.starsArray[game.global.level + 4] = 0;
+			}
 		}
 
 		$.ajax({ //save progress
